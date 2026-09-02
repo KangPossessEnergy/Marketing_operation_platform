@@ -9,16 +9,23 @@ interface LoginHeaderProps {
 const LoginHeader: React.FC<LoginHeaderProps> = ({ onLanguageClick }) => {
   return (
     <header className="login-header">
-      <Row align="middle" className="login-header__row" justify="space-between">
-        <Col flex="auto">
+      <Row
+        align="middle"
+        className="login-header__row"
+        justify="space-between"
+        wrap={false}
+      >
+        <Col className="login-header__brand-col" flex="auto">
           <div className="login-header__brand">
-            <span className="brand-mark">
-              <AreaChartOutlined />
-            </span>
-            <span className="brand-name">营销运营平台</span>
+            <div className="brand">
+              <span className="brand-mark">
+                <AreaChartOutlined />
+              </span>
+              <span className="brand-name">营销运营平台</span>
+            </div>
           </div>
         </Col>
-        <Col flex="none">
+        <Col className="login-header__language-col" flex="none">
           <button
             className="language-switcher"
             onClick={onLanguageClick}

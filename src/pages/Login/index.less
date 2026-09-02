@@ -125,6 +125,16 @@
 
 .login-header__row {
   width: 100%;
+  flex-wrap: nowrap;
+}
+
+.login-header__brand-col {
+  min-width: 0;
+}
+
+.login-header__language-col {
+  flex: 0 0 auto;
+  margin-left: 16px;
 }
 
 .login-header__brand,
@@ -138,6 +148,13 @@
 }
 
 .login-header__brand {
+  min-width: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
   gap: 12px;
 }
 
@@ -153,6 +170,10 @@
 }
 
 .brand-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: #263956;
   font-size: 18px;
   font-weight: 700;
@@ -181,6 +202,7 @@
 .login-shell {
   min-height: calc(100vh - 156px);
   padding: 52px 24px 56px;
+  display: flex;
 }
 
 .login-shell__row {
@@ -451,7 +473,11 @@
     min-height: 36px;
   }
 
-  .login-header__brand {
+  .login-header__language-col {
+    margin-left: 12px;
+  }
+
+  .brand {
     gap: 9px;
   }
 

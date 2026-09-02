@@ -2,6 +2,9 @@ import React from "react";
 import { Col, Row } from "antd";
 
 const LoginFooter: React.FC = () => {
+  
+  const currentYear = new Date().getFullYear();//获取当前年份
+
   return (
     <footer className="login-footer">
       <Row align="middle" className="login-footer__row" justify="center">
@@ -12,7 +15,7 @@ const LoginFooter: React.FC = () => {
           <span className="login-footer__dot" />
         </Col>
         <Col flex="none">
-          <span> © 2026 kk集团 版权所有</span>
+          <span>© {currentYear} kk集团 版权所有。</span>
         </Col>
       </Row>
     </footer>
