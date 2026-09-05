@@ -38,6 +38,13 @@ export default defineConfig({
 
   //8 配置打包后资源的导入路径, 默认是/   开发环境不用配,生产环境也就是项目部署的时候需要配
   publicPath: process.env.NODE_ENV === 'development' ? '/' : '/abc/',
+  proxy: {
+    '/api': {
+      target: 'http://127.0.0.1:3000',
+      changeOrigin: true,
+      pathRewrite: { '^/api': '' },
+    },
+  },
   //9 配置网站标题
   title: '营销运营平台',
 

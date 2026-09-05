@@ -1,8 +1,12 @@
+import axios from "axios";
 import React, { FormEvent, useState } from "react";
 import "./index.less";
 
 import { Col, message, Row } from "antd";
+import { useNavigate } from "umi";
+import { LoginServices } from "@/services/Login";
 import { LoginMode } from "@/types/Login";
+import { setToken, setUserInfo } from "@/utils/localStorage";
 import LoginCard from "./components/LoginCard";
 import LoginFooter from "./components/LoginFooter";
 import LoginHeader from "./components/LoginHeader";
@@ -10,6 +14,7 @@ import LoginBackdrop from "./components/LoginBackdrop";
 import { LoginFormProps } from "./components/LoginForm";
 
 const Login: React.FC = () => {
+  const navigate = useNavigate();
   const [mode, setMode] = useState<LoginMode>("password");
   const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +24,7 @@ const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [codeSent, setCodeSent] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!account.trim()) {
@@ -32,16 +37,35 @@ const Login: React.FC = () => {
       return;
     }
 
-    if (mode === "sms" && !code) {
-      message.warning("请输入验证码");
+    if (mode === "sms") {
+      message.warning("当前服务暂不支持短信登录，请使用密码登录");
       return;
     }
 
     setIsSubmitting(true);
-    window.setTimeout(() => {
+    try {
+      const { data } = await LoginServices.loginAPi({
+        username: account.trim(),
+        password,
+      });
+
+      setToken(data.accessToken);
+      setUserInfo(data.user);
+      message.success("登录成功，欢迎进入营销运营平台");
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      const responseData = axios.isAxiosError(error)
+        ? error.response?.data
+        : (error as { data?: { message?: string } })?.data;
+      const errorMessage =
+        (responseData as { message?: string })?.message ||
+        (error as Error)?.message ||
+        "登录失败，请稍后重试";
+
+      message.error(errorMessage);
+    } finally {
       setIsSubmitting(false);
-      message.success("演示登录成功，欢迎进入营销运营平台");
-    }, 650);
+    }
   };
 
   const handleSendCode = () => {

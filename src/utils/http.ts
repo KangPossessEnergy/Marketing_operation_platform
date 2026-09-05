@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 
 // 只处理常见的code和message
 // 业务提示，由业务侧完成，比如创建或编辑失败等
@@ -41,24 +41,34 @@ instance.interceptors.response.use(
     return response;
   },
   (error) => {
-    return Promise.resolve(error);
+    return Promise.reject(error);
   }
 );
 
-const httpMethodWrapper = async (func: any, url: any, params?: any) => {
+const httpMethodWrapper = async <T>(
+  func: any,
+  url: string,
+  params?: any
+): Promise<AxiosResponse<T>> => {
   const response = await func(url, params);
   const { data } = response;
-  if (data.code === 200) {
+
+  // 兼容原有 { code: 200, data } 响应和 Nest 直接返回 2xx JSON 的响应。
+  if (response.status >= 200 && response.status < 300 && (!data?.code || data.code === 200)) {
     return response;
-  } else {
-    return Promise.reject({
-      ...response,
-      data: ErrorHandler(data)
-    });
   }
+
+  return Promise.reject({
+    ...response,
+    data: ErrorHandler(data),
+  });
 };
 
-export const get = async (url: string, params?: any) => httpMethodWrapper(instance.get, url, { params });
-export const post = async (url: string, params?: any) => httpMethodWrapper(instance.post, url, params);
-export const put = async (url: string, params?: any) => httpMethodWrapper(instance.put, url, params);
-export const del = async (url: string, params?: any) => httpMethodWrapper(instance.delete, url, params);
+export const get = <T>(url: string, params?: any) =>
+  httpMethodWrapper<T>(instance.get, url, { params });
+export const post = <T>(url: string, params?: any) =>
+  httpMethodWrapper<T>(instance.post, url, params);
+export const put = <T>(url: string, params?: any) =>
+  httpMethodWrapper<T>(instance.put, url, params);
+export const del = <T>(url: string, params?: any) =>
+  httpMethodWrapper<T>(instance.delete, url, params);
