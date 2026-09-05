@@ -84,6 +84,7 @@ instance.interceptors.response.use(
     return response;
   },
   (error) => {
+    publishRequestError(error);
     return Promise.reject(error);
   }
 );
