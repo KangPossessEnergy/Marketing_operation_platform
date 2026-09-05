@@ -31,7 +31,7 @@ export const setUserRole = (role: string) => {
 };
 
 export const clearUserRole = () => {
-  localStorage.removeItem("userInfo");
+  localStorage.removeItem("role");
 };
 
 export const clearAll = () => {

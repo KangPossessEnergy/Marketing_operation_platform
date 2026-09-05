@@ -14,3 +14,5 @@ export interface LoginResult {
   expiresIn: number;
   user: LoginUser;
 }
+
+export type LogoutResult = void;

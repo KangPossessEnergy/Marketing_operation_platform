@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useMemo, useState } from "react";
 import { Dropdown, MenuProps, message } from "antd";
 import {
@@ -6,6 +7,8 @@ import {
   SettingOutlined,
   UserOutlined,
 } from "@ant-design/icons";
+import { LoginServices } from "@/services/Login";
+import { clearAll } from "@/utils/localStorage";
 import { useLocation, useNavigate } from "umi";
 import "./Header.less";
 
@@ -33,6 +36,7 @@ const Header: React.FC = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [mallMenuOpen, setMallMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const selectedKey = useMemo(() => {
     if (location.pathname === "/home" || location.pathname === "/") {
@@ -56,8 +60,9 @@ const Header: React.FC = () => {
     {
       key: "logout",
       icon: <LogoutOutlined />,
-      label: "退出登录",
+      label: isLoggingOut ? "退出中..." : "退出登录",
       danger: true,
+      disabled: isLoggingOut,
     },
   ];
 
@@ -70,10 +75,25 @@ const Header: React.FC = () => {
     message.info(`${item.label}模块正在建设中`);
   };
 
-  const handleUserMenuClick: MenuProps["onClick"] = ({ key }) => {
+  const handleUserMenuClick: MenuProps["onClick"] = async ({ key }) => {
     if (key === "logout") {
-      message.success("已退出当前演示账号");
-      navigate("/login");
+      if (isLoggingOut) {
+        return;
+      }
+
+      setIsLoggingOut(true);
+      try {
+        await LoginServices.logoutApi();
+        clearAll();
+        message.success("已退出登录");
+        navigate("/login", { replace: true });
+      } catch (error:any) {
+        const mes =error.data.message;
+  
+        message.error(errorMessage);
+      } finally {
+        setIsLoggingOut(false);
+      }
       return;
     }
 
