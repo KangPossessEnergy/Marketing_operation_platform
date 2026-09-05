@@ -1,8 +1,12 @@
 import axios, { type AxiosResponse } from "axios";
+import { emitter, emitterChannel } from "@/utils/mitt";
+import { getToken } from "@/utils/localStorage";
 
 // 只处理常见的code和message
 // 业务提示，由业务侧完成，比如创建或编辑失败等
-const ErrorHandler = ({ code, data, message }: any) => {
+const ErrorHandler = (payload: any = {}) => {
+  const { code, data, message } = payload || {};
+
   switch (code) {
     case 500:
       return {
@@ -19,6 +23,41 @@ const ErrorHandler = ({ code, data, message }: any) => {
   }
 };
 
+type ErrorResponseData = {
+  message?: string | string[];
+  data?: {
+    message?: string | string[];
+  };
+};
+
+export const getErrorMessage = (
+  error: unknown,
+  fallback = "请求失败，请稍后重试"
+) => {
+  const responseData = axios.isAxiosError(error)
+    ? error.response?.data
+    : (error as { data?: ErrorResponseData } | undefined)?.data;
+  const message =
+    (responseData as ErrorResponseData | undefined)?.message ||
+    (responseData as ErrorResponseData | undefined)?.data?.message;
+
+  if (Array.isArray(message)) {
+    return message.join("；");
+  }
+
+  return message || (error as Error | undefined)?.message || fallback;
+};
+
+const publishRequestError = (
+  error: unknown,
+  fallback = "请求失败，请稍后重试"
+) => {
+  emitter.emit(emitterChannel.requestError, {
+    message: getErrorMessage(error, fallback),
+    error,
+  });
+};
+
 const instance = axios.create({
   timeout: 5000,
 });
@@ -26,11 +65,15 @@ const instance = axios.create({
 //请求拦截器
 instance.interceptors.request.use(
   (config) => {
-    // config.headers.token = getToken();
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
     return config;
   },
   (error) => {
+    publishRequestError(error);
     return Promise.reject(error);
   }
 );
@@ -58,10 +101,13 @@ const httpMethodWrapper = async <T>(
     return response;
   }
 
-  return Promise.reject({
+  const normalizedError = {
     ...response,
     data: ErrorHandler(data),
-  });
+  };
+
+  publishRequestError(normalizedError);
+  return Promise.reject(normalizedError);
 };
 
 export const get = <T>(url: string, params?: any) =>

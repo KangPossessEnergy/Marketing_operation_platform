@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { useMemo, useState } from "react";
 import { Dropdown, MenuProps, message } from "antd";
 import {
@@ -9,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { LoginServices } from "@/services/Login";
 import { clearAll } from "@/utils/localStorage";
+import { publishSuccess } from "@/utils/mitt";
 import { useLocation, useNavigate } from "umi";
 import "./Header.less";
 
@@ -84,15 +84,13 @@ const Header: React.FC = () => {
       setIsLoggingOut(true);
       try {
         await LoginServices.logoutApi();
-        clearAll();
-        message.success("已退出登录");
-        navigate("/login", { replace: true });
-      } catch (error:any) {
-        const mes =error.data.message;
-  
-        message.error(errorMessage);
+        publishSuccess("已退出登录");
+      } catch {
+        // 请求错误由全局发布订阅监听器统一提示。
       } finally {
+        clearAll();
         setIsLoggingOut(false);
+        navigate("/login", { replace: true });
       }
       return;
     }

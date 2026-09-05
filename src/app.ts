@@ -1,19 +1,48 @@
-// //运行时配置
+import React, { useEffect, type ReactNode } from "react";
+import { message } from "antd";
+import {
+  emitter,
+  emitterChannel,
+  type RequestErrorEvent,
+  type SuccessMessageEvent,
+} from "@/utils/mitt";
 
-// //测试sourcemap,抛出一个错误
-// // throw new Error('123321');
+const RequestErrorListener: React.FC = () => {
+  useEffect(() => {
+    const handleRequestError = ({ message: errorMessage }: RequestErrorEvent) => {
+      message.error(errorMessage);
+    };
 
-// //全局的初始值
-// export async function getInitialState() {
-//   // 这里可以调用接口或读取本地存储
-//   return {
-//     currentUser: {
-//       name: 'Guest',
-//       role: 'user',
-//     },
-//     theme: 'light',
-//     settings: {
-//       /* 其他全局配置 */
-//     },
-//   };
-// }
+    emitter.on(emitterChannel.requestError, handleRequestError);
+    return () => {
+      emitter.off(emitterChannel.requestError, handleRequestError);
+    };
+  }, []);
+
+  return null;
+};
+
+const SuccessMessageListener: React.FC = () => {
+  useEffect(() => {
+    const handleSuccessMessage = ({ message: successMessage }: SuccessMessageEvent) => {
+      message.success(successMessage);
+    };
+
+    emitter.on(emitterChannel.successMessage, handleSuccessMessage);
+    return () => {
+      emitter.off(emitterChannel.successMessage, handleSuccessMessage);
+    };
+  }, []);
+
+  return null;
+};
+
+export function rootContainer(container: ReactNode) {
+  return React.createElement(
+    React.Fragment,
+    null,
+    React.createElement(RequestErrorListener),
+    React.createElement(SuccessMessageListener),
+    container
+  );
+}

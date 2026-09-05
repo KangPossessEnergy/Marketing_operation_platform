@@ -1,4 +1,3 @@
-import axios from "axios";
 import React, { FormEvent, useState } from "react";
 import "./index.less";
 
@@ -7,6 +6,7 @@ import { useNavigate } from "umi";
 import { LoginServices } from "@/services/Login";
 import { LoginMode } from "@/types/Login";
 import { setToken, setUserInfo } from "@/utils/localStorage";
+import { publishSuccess } from "@/utils/mitt";
 import LoginCard from "./components/LoginCard";
 import LoginFooter from "./components/LoginFooter";
 import LoginHeader from "./components/LoginHeader";
@@ -51,18 +51,10 @@ const Login: React.FC = () => {
 
       setToken(data.accessToken);
       setUserInfo(data.user);
-      message.success("登录成功，欢迎进入营销运营平台");
+      publishSuccess("登录成功，欢迎进入营销运营平台");
       navigate("/dashboard", { replace: true });
-    } catch (error) {
-      const responseData = axios.isAxiosError(error)
-        ? error.response?.data
-        : (error as { data?: { message?: string } })?.data;
-      const errorMessage =
-        (responseData as { message?: string })?.message ||
-        (error as Error)?.message ||
-        "登录失败，请稍后重试";
-
-      message.error(errorMessage);
+    } catch {
+      // 请求错误由全局发布订阅监听器统一提示。
     } finally {
       setIsSubmitting(false);
     }
