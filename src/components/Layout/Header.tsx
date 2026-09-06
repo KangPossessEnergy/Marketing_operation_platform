@@ -7,17 +7,44 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { LoginServices } from "@/services/Login";
-import { clearAll } from "@/utils/localStorage";
+import { clearAll, getUserInfo } from "@/utils/localStorage";
 import { publishSuccess } from "@/utils/mitt";
 import { useLocation, useNavigate } from "umi";
 import "./Header.less";
 import HeaderMenu, { type HeaderMenuNode } from "./HeaderMenu";
+
+type CurrentUser = {
+  id?: string;
+  username?: string | null;
+  phone?: string | null;
+};
+
+const maskPhone = (phone?: string | null) => {
+  if (!phone) {
+    return "";
+  }
+
+  return phone.replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
+};
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const currentUser = getUserInfo() as CurrentUser;
+  const accountName =
+    currentUser.username?.trim() ||
+    maskPhone(currentUser.phone) ||
+    "当前用户";
+  const accountDescription =
+    currentUser.username && currentUser.phone
+      ? maskPhone(currentUser.phone)
+      : currentUser.username
+        ? "用户名登录"
+        : currentUser.phone
+          ? "手机号登录"
+          : "未获取到登录信息";
 
   const selectedKey = useMemo(() => {
     if (location.pathname === "/home" || location.pathname === "/") {
@@ -107,8 +134,8 @@ const Header: React.FC = () => {
       >
         <button className="app-account" type="button" aria-expanded={open}>
           <span className="app-account__details">
-            <strong>187****9192</strong>
-            <span>内部</span>
+            <strong>{accountName}</strong>
+            <span>{accountDescription}</span>
           </span>
           <DownOutlined className="app-account__arrow" />
         </button>
