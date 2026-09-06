@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Breadcrumb, Button, Input, Table, Tag, Tree } from "antd";
+import { Button, Input, Table, Tag, Tree } from "antd";
 import type { TreeDataNode } from "antd";
 import {
   ApartmentOutlined,
@@ -8,6 +8,7 @@ import {
   TeamOutlined,
 } from "@ant-design/icons";
 import { useParams } from "umi";
+import PageBreadcrumb from "@/components/Common/PageBreadcrumb";
 import UserManagement from "./components/UserManagement";
 import "./index.less";
 
@@ -172,7 +173,7 @@ const BasicSettings: React.FC = () => {
   return (
     <div className="settings-page">
       <div className="settings-page__header">
-        <Breadcrumb
+        <PageBreadcrumb
           items={[
             { title: "基础设置" },
             { title: currentSection.group },
