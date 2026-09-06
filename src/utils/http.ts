@@ -115,6 +115,8 @@ export const get = <T>(url: string, params?: any) =>
   httpMethodWrapper<T>(instance.get, url, { params });
 export const post = <T>(url: string, params?: any) =>
   httpMethodWrapper<T>(instance.post, url, params);
+export const patch = <T>(url: string, params?: any) =>
+  httpMethodWrapper<T>(instance.patch, url, params);
 export const put = <T>(url: string, params?: any) =>
   httpMethodWrapper<T>(instance.put, url, params);
 export const del = <T>(url: string, params?: any) =>
