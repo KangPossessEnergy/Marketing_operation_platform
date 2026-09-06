@@ -38,6 +38,11 @@ export const routes:any = [
     component: "@/pages/Home",
   },
   {
+    name: "基础设置",
+    path: "/settings/:section",
+    component: "@/pages/BasicSettings",
+  },
+  {
     name: "ErrorPage",
     path: "/*",
     component: "@/pages/ErrorPage/index",

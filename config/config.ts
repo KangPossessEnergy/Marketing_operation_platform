@@ -34,6 +34,7 @@ export default defineConfig({
     minifyIdentifiers: true, // 缩短标识符
     minifySyntax: true, // 简化语法结构
   },
+  esbuildMinifyIIFE: true,
 
 
   //8 配置打包后资源的导入路径, 默认是/   开发环境不用配,生产环境也就是项目部署的时候需要配
