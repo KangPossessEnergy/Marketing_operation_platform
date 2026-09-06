@@ -50,9 +50,6 @@ const Header: React.FC = () => {
     if (location.pathname === "/home" || location.pathname === "/") {
       return "mall";
     }
-    if (location.pathname === "/dashboard") {
-      return "sales";
-    }
     if (location.pathname.startsWith("/settings/")) {
       return "settings";
     }

@@ -52,7 +52,7 @@ const Login: React.FC = () => {
       setToken(data.accessToken);
       setUserInfo(data.user);
       publishSuccess("登录成功，欢迎进入营销运营平台");
-      navigate("/dashboard", { replace: true });
+      navigate("/home", { replace: true });
     } catch {
       // 请求错误由全局发布订阅监听器统一提示。
     } finally {

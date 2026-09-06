@@ -1,5 +1,5 @@
 //路由信息
-export const routes:any = [
+export const routes: any = [
   { path: "/", redirect: "/login" },
   {
     name: "登陆页",
@@ -13,41 +13,24 @@ export const routes:any = [
     component: "@/pages/Register",
     layout: false,
   },
-  //   {
-  //     name: "全局布局",
-  //     component: "@/layouts/layout",
-  //     routes: [
-  //       {
-  //         path: "/welcome",
-  //         redirect: "/welcome",
-  //       },
-  //       {
-  //         name: "欢迎页",
-  //         path: "/welcome",
-  //         component: "@/pages/Welcome",
-  //       },
-  //       {
-  //         name: "首页",
-  //         path: "/home",
-  //         component: "@/pages/Home",
-  //       },
-  //     ],
-  //   },
   {
-    name: "欢迎页",
-    path: "/dashboard",
-    component: "@/pages/Dashboard",
+    name: "全局布局",
+    component: "@/layouts/index",
+    layout: false,
+    routes: [
+      {
+        name: "首页",
+        path: "/home",
+        component: "@/pages/Home",
+      },
+      {
+        name: "基础设置",
+        path: "/settings/:section",
+        component: "@/pages/BasicSettings",
+      },
+    ],
   },
-  {
-    name: "首页",
-    path: "/home",
-    component: "@/pages/Home",
-  },
-  {
-    name: "基础设置",
-    path: "/settings/:section",
-    component: "@/pages/BasicSettings",
-  },
+
   {
     name: "ErrorPage",
     path: "/*",
@@ -60,10 +43,6 @@ export const menuData: any = [
   {
     key: "login",
     label: "登录页",
-  },
-  {
-    key: "dashboard",
-    label: "看版页",
   },
   {
     key: "home",

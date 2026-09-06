@@ -45,7 +45,7 @@ pnpm build
 │   └── routes.ts        #   路由与菜单配置
 ├── src/
 │   ├── layouts/         # 全局布局(umi 约定,勿留空文件)
-│   ├── pages/           # 页面:Login / Dashboard / Home / ErrorPage
+│   ├── pages/           # 页面:Login / Home / ErrorPage
 │   ├── components/      # 组件(Business 业务组件 / Common 通用组件)
 │   ├── services/        # 接口请求
 │   ├── models/          # 全局数据模型

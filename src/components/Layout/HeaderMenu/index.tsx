@@ -31,7 +31,6 @@ export const headerMenuData: HeaderMenuNode[] = [
   { key: "pricing", label: "价格管理" },
   { key: "data", label: "商品数据" },
   { key: "quotes", label: "报价管理" },
-  { key: "sales", label: "销售运营", path: "/dashboard" },
   {
     key: "settings",
     label: "基础设置",
