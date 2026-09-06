@@ -8,6 +8,7 @@ import {
   TeamOutlined,
 } from "@ant-design/icons";
 import { useParams } from "umi";
+import UserManagement from "./components/UserManagement";
 import "./index.less";
 
 type SettingSection = {
@@ -166,6 +167,7 @@ const BasicSettings: React.FC = () => {
   }, [keyword]);
 
   const isOrganizationPage = section === "organization-structure" || !settingSections[section];
+  const isAccountPage = section === "account-information";
 
   return (
     <div className="settings-page">
@@ -307,6 +309,8 @@ const BasicSettings: React.FC = () => {
             />
           </div>
         </section>
+      ) : isAccountPage ? (
+        <UserManagement />
       ) : (
         <section className="settings-placeholder" aria-label={`${currentSection.title}页面`}>
           <span className="settings-placeholder__icon">

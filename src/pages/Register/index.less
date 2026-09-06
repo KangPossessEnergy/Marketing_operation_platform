@@ -1,0 +1,70 @@
+.register-page {
+  .register-shell {
+    padding-top: 42px;
+  }
+
+  .register-card {
+    padding-bottom: 26px;
+  }
+
+  .register-form {
+    margin-top: 28px;
+  }
+
+  .register-agreement {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 4px 0 19px;
+    color: #8996a9;
+    font-size: 12px;
+    line-height: 1.6;
+    cursor: pointer;
+  }
+
+  .register-agreement input {
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    margin: 2px 0 0;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .register-agreement .text-button {
+    margin: 0 3px;
+    font-size: 12px;
+  }
+
+  .register-back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    margin-top: 20px;
+    padding: 0;
+    color: #8794a8;
+    font-size: 12px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .register-back-button:hover {
+    color: var(--primary);
+  }
+}
+
+@media (max-width: 640px) {
+  .register-page {
+    .register-shell {
+      padding-top: 26px;
+    }
+
+    .register-card {
+      padding-bottom: 23px;
+    }
+  }
+}

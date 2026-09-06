@@ -7,6 +7,12 @@ export const routes:any = [
     component: "@/pages/Login", //去src下找pages目录下的login组件
     layout: false,
   },
+  {
+    name: "注册页",
+    path: "/register",
+    component: "@/pages/Register",
+    layout: false,
+  },
   //   {
   //     name: "全局布局",
   //     component: "@/layouts/layout",

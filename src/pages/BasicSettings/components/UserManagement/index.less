@@ -1,0 +1,205 @@
+.account-workspace {
+  display: flex;
+  width: min(100%, 1680px);
+  margin: 0 auto;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.account-filter-panel,
+.account-table-panel {
+  background: #fff;
+  border: 1px solid #e7edf5;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(38, 69, 108, 0.04);
+}
+
+.account-filter-panel {
+  padding: 20px 24px 6px;
+}
+
+.account-filter-form .ant-form-item {
+  margin-bottom: 14px;
+}
+
+.account-filter-form .ant-form-item-label {
+  white-space: nowrap;
+}
+
+.account-filter-form .ant-form-item-control {
+  min-width: 0;
+}
+
+.account-filter-form .ant-input,
+.account-filter-form .ant-select-selector {
+  min-width: 0;
+}
+
+.account-filter-actions {
+  min-height: 32px;
+  margin-top: 0;
+}
+
+.account-table-panel {
+  min-width: 0;
+  padding: 0 24px 24px;
+}
+
+.account-table-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 66px;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.account-table-panel__header .ant-tabs {
+  align-self: stretch;
+  margin-bottom: -1px;
+}
+
+.account-table-panel__header .ant-tabs-nav {
+  margin: 0;
+}
+
+.account-table-panel__header .ant-tabs-tab {
+  padding: 22px 0 17px;
+  font-size: 14px;
+}
+
+.account-table-panel__header .ant-btn {
+  border-radius: 5px;
+}
+
+.account-table-panel .ant-pro-table {
+  margin-top: 14px;
+}
+
+.account-table-panel .ant-table {
+  color: #303b49;
+  font-size: 13px;
+}
+
+.account-table-panel .ant-table-thead > tr > th {
+  color: #3e4b5b;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+  background: #fafbfd;
+}
+
+.account-table-panel .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.account-table-panel .ant-table-tbody > tr:hover > td {
+  background: #f7faff;
+}
+
+.account-user-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.account-user-name__avatar {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  color: #4384e3;
+  background: #eaf3ff;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+.account-user-name strong {
+  color: #2e3b4b;
+  font-weight: 600;
+}
+
+.permission-icon {
+  font-size: 18px;
+}
+
+.permission-icon--enabled {
+  color: #58bd7c;
+}
+
+.permission-icon--disabled {
+  color: #ff7d65;
+}
+
+.account-table-action {
+  padding: 0 3px;
+  font-size: 12px;
+}
+
+.account-table-action--danger {
+  color: #ff4d4f;
+}
+
+.account-role-placeholder {
+  display: grid;
+  min-height: 360px;
+  place-content: center;
+  justify-items: center;
+  text-align: center;
+}
+
+.account-role-placeholder h2 {
+  margin-top: 15px;
+  color: #344253;
+  font-size: 18px;
+}
+
+.account-role-placeholder p {
+  margin-top: 8px;
+  color: #9aa7b7;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .account-filter-panel,
+  .account-table-panel {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .account-table-panel__header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 8px;
+  }
+
+  .account-table-panel__header > .ant-space {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+@media (max-width: 640px) {
+  .account-filter-panel {
+    padding-top: 16px;
+  }
+
+  .account-filter-form .ant-form-item-label {
+    flex: 0 0 76px;
+  }
+
+  .account-table-panel {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .account-table-panel__header > .ant-space {
+    flex-wrap: wrap;
+  }
+
+  .account-table-panel__header > .ant-space .ant-btn {
+    flex: 1;
+  }
+}

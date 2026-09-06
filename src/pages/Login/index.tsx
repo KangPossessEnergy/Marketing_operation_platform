@@ -108,7 +108,7 @@ const Login: React.FC = () => {
               formProps={formProps}
               mode={mode}
               onModeChange={setMode}
-              onRegister={() => message.info("请联系企业管理员开通账号")}
+              onRegister={() => navigate("/register")}
             />
           </Col>
         </Row>
