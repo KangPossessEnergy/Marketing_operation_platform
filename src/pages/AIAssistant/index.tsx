@@ -17,6 +17,7 @@ import {
   ThunderboltOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "umi";
+import RequireAuth from "@/components/Auth/RequireAuth";
 import "./index.less";
 
 type ChatMessage = {
@@ -111,26 +112,27 @@ const AIAssistant: React.FC = () => {
   };
 
   return (
-    <div className="ai-workbench">
-      <aside className={`ai-workbench__sidebar ${isSidebarOpen ? "ai-workbench__sidebar--open" : ""}`}>
-        <div className="ai-workbench__brand">
-          <span className="ai-workbench__brand-mark">
-            <span className="ai-workbench__brand-orbit" />
-            <RobotOutlined />
-          </span>
-          <span>
-            <strong>AI 助手</strong>
-            <small>运营智能工作台</small>
-          </span>
-          <button
-            className="ai-icon-button ai-icon-button--mobile"
-            type="button"
-            aria-label="关闭侧栏"
-            onClick={() => setIsSidebarOpen(false)}
-          >
-            <CloseOutlined />
-          </button>
-        </div>
+    <RequireAuth>
+      <div className="ai-workbench">
+        <aside className={`ai-workbench__sidebar ${isSidebarOpen ? "ai-workbench__sidebar--open" : ""}`}>
+          <div className="ai-workbench__brand">
+            <span className="ai-workbench__brand-mark">
+              <span className="ai-workbench__brand-orbit" />
+              <RobotOutlined />
+            </span>
+            <span>
+              <strong>AI 助手</strong>
+              <small>运营智能工作台</small>
+            </span>
+            <button
+              className="ai-icon-button ai-icon-button--mobile"
+              type="button"
+              aria-label="关闭侧栏"
+              onClick={() => setIsSidebarOpen(false)}
+            >
+              <CloseOutlined />
+            </button>
+          </div>
 
         <button className="ai-new-chat" type="button" onClick={startNewConversation}>
           <PlusOutlined />
@@ -326,7 +328,8 @@ const AIAssistant: React.FC = () => {
           </footer>
         </section>
       </main>
-    </div>
+      </div>
+    </RequireAuth>
   );
 };
 

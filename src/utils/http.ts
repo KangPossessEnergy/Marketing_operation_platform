@@ -1,6 +1,7 @@
 import axios, { type AxiosResponse } from "axios";
 import { emitter, emitterChannel } from "@/utils/mitt";
 import { getToken } from "@/utils/localStorage";
+import { redirectToLogin } from "@/utils/auth";
 
 // 只处理常见的code和message
 // 业务提示，由业务侧完成，比如创建或编辑失败等
@@ -58,6 +59,20 @@ const publishRequestError = (
   });
 };
 
+const isUnauthorizedError = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    return (
+      error.response?.status === 401 ||
+      Number(error.response?.data?.code) === 401
+    );
+  }
+
+  const response = error as
+    | { status?: number; data?: { code?: number | string } }
+    | undefined;
+  return response?.status === 401 || Number(response?.data?.code) === 401;
+};
+
 const instance = axios.create({
   timeout: 5000,
 });
@@ -84,6 +99,10 @@ instance.interceptors.response.use(
     return response;
   },
   (error) => {
+    if (isUnauthorizedError(error)) {
+      redirectToLogin();
+    }
+
     publishRequestError(error);
     return Promise.reject(error);
   }
@@ -106,6 +125,10 @@ const httpMethodWrapper = async <T>(
     ...response,
     data: ErrorHandler(data),
   };
+
+  if (isUnauthorizedError(normalizedError)) {
+    redirectToLogin();
+  }
 
   publishRequestError(normalizedError);
   return Promise.reject(normalizedError);
