@@ -1,52 +1,48 @@
 import React from "react";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Prompts } from "@ant-design/x";
+import type { PromptsItemType } from "@ant-design/x";
+import { Typography } from "antd";
 import { promptSuggestions } from "../constants";
 import type { PromptSuggestionsProps } from "../types";
 
-const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({ onSelect }) => (
-  <div className="ai-suggestions">
-    <div className="ai-suggestions__heading">
-      <span>从一个方向开始</span>
-      <small>快速唤起常用能力</small>
-    </div>
-    <div className="ai-suggestion-grid">
-      {promptSuggestions.map((suggestion) => (
-        <PromptSuggestion
-          key={suggestion.title}
-          suggestion={suggestion}
-          onSelect={onSelect}
-        />
-      ))}
-    </div>
-  </div>
-);
+const { Title } = Typography;
 
-type PromptSuggestionItemProps = {
-  suggestion: (typeof promptSuggestions)[number];
-  onSelect: (prompt: string) => void;
-};
-
-const PromptSuggestion: React.FC<PromptSuggestionItemProps> = ({
-  suggestion,
-  onSelect,
-}) => {
-  const SuggestionIcon = suggestion.icon;
+const PromptSuggestions: React.FC<PromptSuggestionsProps> = ({ onSelect }) => {
+  const items: PromptsItemType[] = promptSuggestions.map((item) => {
+    const IconComponent = item.icon;
+    return {
+      key: item.key,
+      icon: <IconComponent style={{ fontSize: 18, color: "#2563eb" }} />,
+      label: item.label,
+      description: item.description,
+    };
+  });
 
   return (
-    <button
-      className="ai-suggestion"
-      type="button"
-      onClick={() => onSelect(suggestion.title)}
-    >
-      <span className="ai-suggestion__icon">
-        <SuggestionIcon />
-      </span>
-      <span>
-        <strong>{suggestion.title}</strong>
-        <small>{suggestion.description}</small>
-      </span>
-      <ArrowLeftOutlined />
-    </button>
+    <div className="ai-prompts-section">
+      <div className="ai-prompts-header">
+        <Title level={5} style={{ margin: 0, color: "#64748b" }}>
+          💡 您可以从以下场景开始提问：
+        </Title>
+      </div>
+      <Prompts
+        items={items}
+        onItemClick={(info) => {
+          const matched = promptSuggestions.find((p) => p.key === info.data.key);
+          if (matched) {
+            onSelect(`请帮我${matched.label}：${matched.description}`);
+          }
+        }}
+        styles={{
+          item: {
+            borderRadius: 12,
+            border: "1px solid #e2e8f0",
+            transition: "all 0.2s ease",
+            background: "#ffffff",
+          },
+        }}
+      />
+    </div>
   );
 };
 

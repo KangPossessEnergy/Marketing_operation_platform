@@ -11,7 +11,7 @@ import {
 } from "@ant-design/icons";
 import { Col, Row } from "antd";
 import LoginField from "./LoginField";
-import { LoginMode } from "../types";
+import { LoginMode } from "@/types/Login";
 
 export interface LoginFormProps {
   mode: LoginMode;

@@ -1,31 +1,48 @@
-import type { ElementType } from "react";
+import type { ElementType, ReactNode } from "react";
+
+export type ThoughtStep = {
+  key: string;
+  title: string;
+  status: "loading" | "success" | "error" | "abort";
+  description?: ReactNode;
+  content?: ReactNode;
+  extra?: ReactNode;
+};
 
 export type ChatMessage = {
   id: string;
   role: "assistant" | "user";
   content: string;
   time: string;
+  thoughtChain?: ThoughtStep[];
+  isStreaming?: boolean;
 };
 
 export type AgentConnectionStatus = "checking" | "online" | "offline";
 
 export type PromptSuggestion = {
-  title: string;
+  key: string;
+  label: string;
   description: string;
   icon: ElementType;
 };
 
-export type Conversation = {
-  title: string;
+export type ConversationItem = {
+  key: string;
+  label: string;
   time: string;
-  active: boolean;
+  pinned?: boolean;
 };
 
 export type AssistantSidebarProps = {
   isOpen: boolean;
   agentStatus: AgentConnectionStatus;
+  activeConversationKey: string;
+  conversations: ConversationItem[];
+  onSelectConversation: (key: string) => void;
   onClose: () => void;
   onNewConversation: () => void;
+  onDeleteConversation?: (key: string) => void;
 };
 
 export type AssistantTopbarProps = {
@@ -35,6 +52,7 @@ export type AssistantTopbarProps = {
 
 export type ConversationHeaderProps = {
   messageCount: number;
+  activeTitle?: string;
 };
 
 export type MessageListProps = {
@@ -42,6 +60,7 @@ export type MessageListProps = {
   isThinking: boolean;
   hasStreamingText: boolean;
   thinkingStatus: string;
+  activeThoughts?: ThoughtStep[];
 };
 
 export type PromptSuggestionsProps = {
@@ -52,5 +71,6 @@ export type ChatComposerProps = {
   draft: string;
   isThinking: boolean;
   onDraftChange: (draft: string) => void;
-  onSend: () => void;
+  onSend: (content?: string) => void;
+  onCancel?: () => void;
 };

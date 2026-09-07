@@ -1,5 +1,5 @@
 import React from "react";
-import { LoginMode } from "../types";
+import { LoginMode } from "@/types/Login";
 
 interface LoginTabsProps {
   mode: LoginMode;

@@ -1,5 +1,7 @@
 import React from "react";
-import { PaperClipOutlined, SendOutlined } from "@ant-design/icons";
+import { PaperClipOutlined } from "@ant-design/icons";
+import { Sender } from "@ant-design/x";
+import { Button, Tooltip } from "antd";
 import type { ChatComposerProps } from "../types";
 
 const ChatComposer: React.FC<ChatComposerProps> = ({
@@ -7,43 +9,35 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
   isThinking,
   onDraftChange,
   onSend,
-}) => (
-  <form
-    className="ai-composer"
-    onSubmit={(event) => {
-      event.preventDefault();
-      onSend();
-    }}
-  >
-    <div className="ai-composer__field">
-      <textarea
+  onCancel,
+}) => {
+  return (
+    <div className="ai-composer-wrapper">
+      <Sender
         value={draft}
-        rows={1}
-        placeholder="描述你的目标，或直接提出一个问题..."
-        onChange={(event) => onDraftChange(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            onSend();
+        onChange={onDraftChange}
+        onSubmit={() => {
+          if (draft.trim()) {
+            onSend(draft);
           }
         }}
+        onCancel={onCancel}
+        loading={isThinking}
+        placeholder="描述您的营销目标，或直接提出具体问题（Shift + Enter 换行）..."
+        prefix={
+          <Tooltip title="上传素材或数据文件 (支持 CSV/Excel/图片)">
+            <Button
+              type="text"
+              icon={<PaperClipOutlined />}
+              shape="circle"
+              size="small"
+              className="ai-composer-attach-btn"
+            />
+          </Tooltip>
+        }
       />
-      <div className="ai-composer__tools">
-        <button className="ai-composer__tool" type="button" aria-label="添加附件">
-          <PaperClipOutlined />
-        </button>
-        <span>Shift + Enter 换行</span>
-      </div>
     </div>
-    <button
-      className="ai-send-button"
-      type="submit"
-      aria-label="发送消息"
-      disabled={!draft.trim() || isThinking}
-    >
-      <SendOutlined />
-    </button>
-  </form>
-);
+  );
+};
 
 export default ChatComposer;

@@ -1,7 +1,7 @@
 import React from "react";
 import LoginForm, { LoginFormProps } from "./LoginForm";
 import LoginTabs from "./LoginTabs";
-import { LoginMode } from "../types";
+import { LoginMode } from "@/types/Login";
 
 interface LoginCardProps {
   mode: LoginMode;
