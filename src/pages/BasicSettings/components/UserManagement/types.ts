@@ -2,6 +2,12 @@ import type { AccountUser } from "@/services/UserManagement";
 
 export type UserSearchValues = {
   keyword?: string;
+  username?: string;
+  phone?: string;
+  roleName?: string;
+  storeName?: string;
+  firstAgent?: string;
+  secondAgent?: string;
 };
 
 export type UserFormValues = {

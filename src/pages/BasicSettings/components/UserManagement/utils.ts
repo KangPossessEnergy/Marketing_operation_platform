@@ -34,11 +34,26 @@ export const toQueryParams = (
   pageSize: number
 ): QueryAccountsParams => {
   const keyword = normalizeValue(filters.keyword);
+  const username = normalizeValue(filters.username);
+  const phone = normalizeValue(filters.phone);
+  const roleName = normalizeValue(filters.roleName);
+  const storeName = normalizeValue(filters.storeName);
+  const firstAgent = normalizeValue(filters.firstAgent);
+  const secondAgent = normalizeValue(filters.secondAgent);
+
+  // 兼容后端单 keyword 检索或多字段独立检索
+  const resolvedKeyword = keyword || username || phone;
 
   return {
     page,
     pageSize,
-    ...(keyword ? { keyword } : {}),
+    ...(resolvedKeyword ? { keyword: resolvedKeyword } : {}),
+    ...(username ? { username } : {}),
+    ...(phone ? { phone } : {}),
+    ...(roleName ? { roleName } : {}),
+    ...(storeName ? { storeName } : {}),
+    ...(firstAgent ? { firstAgent } : {}),
+    ...(secondAgent ? { secondAgent } : {}),
   };
 };
 

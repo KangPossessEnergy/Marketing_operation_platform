@@ -11,6 +11,12 @@ export interface QueryAccountsParams {
   page?: number;
   pageSize?: number;
   keyword?: string;
+  username?: string;
+  phone?: string;
+  roleName?: string;
+  storeName?: string;
+  firstAgent?: string;
+  secondAgent?: string;
 }
 
 export interface AccountListResult {
