@@ -1,7 +1,14 @@
 import {
   BulbOutlined,
+  CompassOutlined,
+  DatabaseOutlined,
+  ExperimentOutlined,
   FileSearchOutlined,
-  ThunderboltOutlined,
+  HeartOutlined,
+  LineChartOutlined,
+  ReadOutlined,
+  RocketOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import type {
   ChatMessage,
@@ -19,42 +26,87 @@ export const initialWelcomeMessage: ChatMessage = {
 
 export const initialMessages: ChatMessage[] = [initialWelcomeMessage];
 
+// 参照参考图 Sitor 风格的 6 宫格药丸推荐问题
 export const promptSuggestions: PromptSuggestion[] = [
   {
-    key: "marketing-plan",
-    label: "生成运营活动方案",
-    description: "围绕中秋国庆大促或新品首发，快速起草全链路营销与裂变方案",
+    key: "p1",
+    label: '营销大模型到底怎么"思考"与执行的？',
     icon: BulbOutlined,
   },
   {
-    key: "data-analysis",
-    label: "分析店铺经营数据",
-    description: "从转化漏斗、GMV增长与库存周转率中洞察业务卡点与提效空间",
-    icon: FileSearchOutlined,
+    key: "p2",
+    label: "爆款转化率低？CBT 漏斗拆解法",
+    icon: HeartOutlined,
   },
   {
-    key: "copywriting",
-    label: "优化爆款商品文案",
-    description: "提炼核心差异化卖点，生成适合小红书/抖音等平台的高转化文案",
-    icon: ThunderboltOutlined,
+    key: "p3",
+    label: "新品首发全渠道冷启动与裂变策略",
+    icon: RocketOutlined,
+  },
+  {
+    key: "p4",
+    label: "店铺大促复盘：GMV 增长与库存周转",
+    icon: LineChartOutlined,
+  },
+  {
+    key: "p5",
+    label: "结构化文案生成：小红书爆款公式",
+    icon: ReadOutlined,
+  },
+  {
+    key: "p6",
+    label: "智能运营 Agent 选型与工具链调用",
+    icon: CompassOutlined,
   },
 ];
+
+// 初始化会话列表（具有时间戳与时间相对显示，对应参考图侧边栏结构）
+const now = Date.now();
+const ONE_HOUR = 3600 * 1000;
+const ONE_DAY = 24 * ONE_HOUR;
 
 export const initialConversationList: ConversationItem[] = [
   {
     key: "conv-1",
     label: "新品发布会全渠道运营方案",
-    time: "今天 10:42",
+    time: "刚刚",
+    timestamp: now - 5 * 60 * 1000,
+    group: "新对话",
   },
   {
     key: "conv-2",
-    label: "本周商城各品类数据深度复盘",
-    time: "昨天 16:08",
+    label: "问到agent loop的原理 实际上...",
+    time: "6 天前",
+    timestamp: now - 6 * ONE_DAY,
+    group: "新对话",
   },
   {
     key: "conv-3",
-    label: "智能家居核心产品卖点提炼",
-    time: "9月 04日",
+    label: "我如果做一个erp系统+把智能...",
+    time: "6 天前",
+    timestamp: now - 6 * ONE_DAY - 2 * ONE_HOUR,
+    group: "新对话",
+  },
+  {
+    key: "conv-4",
+    label: "ts一般用@ai-sdk/openai 是 V...",
+    time: "14 天前",
+    timestamp: now - 14 * ONE_DAY,
+    group: "新对话",
+  },
+  {
+    key: "conv-5",
+    label: "结构化表达与营销漏斗拆解...",
+    time: "15 天前",
+    timestamp: now - 15 * ONE_DAY,
+    group: "新对话",
+  },
+  {
+    key: "conv-6",
+    label: "我有一个认知需要找你确定，AI...",
+    time: "20 天前",
+    timestamp: now - 20 * ONE_DAY,
+    group: "新对话",
   },
 ];
 

@@ -23,19 +23,23 @@ export type AgentConnectionStatus = "checking" | "online" | "offline";
 export type PromptSuggestion = {
   key: string;
   label: string;
-  description: string;
-  icon: ElementType;
+  description?: string;
+  icon?: ElementType;
 };
 
 export type ConversationItem = {
   key: string;
   label: string;
-  time: string;
+  time: string; // 相对时间或具体时间，如 "刚刚"、"6 天前"
+  timestamp: number; // 毫秒时间戳用于排序与时间分组
+  group?: string; // "今天" | "7 天前" | "更早" | "学习足迹"
   pinned?: boolean;
 };
 
 export type AssistantSidebarProps = {
   isOpen: boolean;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
   agentStatus: AgentConnectionStatus;
   activeConversationKey: string;
   conversations: ConversationItem[];
@@ -48,6 +52,8 @@ export type AssistantSidebarProps = {
 export type AssistantTopbarProps = {
   onOpenSidebar: () => void;
   onBackHome: () => void;
+  sidebarCollapsed?: boolean;
+  onToggleSidebarCollapse?: () => void;
 };
 
 export type ConversationHeaderProps = {
