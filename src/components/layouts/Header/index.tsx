@@ -10,12 +10,12 @@ import { LoginServices } from "@/services/Login";
 import { clearAll, getUserInfo } from "@/utils/localStorage";
 import { publishSuccess } from "@/utils/mitt";
 import { useLocation, useNavigate } from "umi";
-import "./Header.less";
+import "./index.less";
 import HeaderMenu, {
   findHeaderMenuTrail,
   headerMenuData,
   type HeaderMenuNode,
-} from "./HeaderMenu";
+} from "../HeaderMenu";
 
 type CurrentUser = {
   id?: string;

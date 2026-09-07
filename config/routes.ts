@@ -11,18 +11,17 @@ export const routes: any = [
     name: "注册页",
     path: "/register",
     component: "@/pages/Register",
-    layout: false,
+    // layout: false,
   },
   {
     name: "AI助手工作台",
     path: "/ai-assistant",
     component: "@/pages/AIAssistant",
-    layout: false,
+    // layout: false,
   },
   {
     name: "全局布局",
-    component: "@/layouts/index",
-    layout: false,
+    component: "@/components/layouts/index", //去src下找components目录下的layouts目录下的index组件
     routes: [
       {
         name: "首页",

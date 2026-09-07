@@ -5,7 +5,7 @@ import PageBreadcrumb from "@/components/Common/PageBreadcrumb";
 import {
   findHeaderMenuTrail,
   headerMenuData,
-} from "@/components/Layout/HeaderMenu";
+} from "@/components/layouts/HeaderMenu";
 import "./index.less";
 
 const ModulePlaceholder: React.FC = () => {
