@@ -1,33 +1,40 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  BulbOutlined,
-  CompassOutlined,
-  HeartOutlined,
-  LineChartOutlined,
+  CalculatorOutlined,
   MenuOutlined,
-  ReadOutlined,
-  RocketOutlined,
-  SafetyCertificateOutlined,
-  ThunderboltOutlined,
+  RollbackOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
-import { Button, Tag, Typography } from "antd";
 import { useNavigate } from "umi";
 import RequireAuth from "@/components/Auth/RequireAuth";
 import AssistantSidebar from "./components/AssistantSidebar";
-import AssistantTopbar from "./components/AssistantTopbar";
 import ChatComposer from "./components/ChatComposer";
 import MessageList from "./components/MessageList";
 import PromptSuggestions from "./components/PromptSuggestions";
 import useAgentChat from "./hooks/useAgentChat";
 import "./index.less";
 
-const { Title, Paragraph } = Typography;
-
 const AIAssistant: React.FC = () => {
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isExitingAssistant, setIsExitingAssistant] = useState(false);
+  const [portalOrigin, setPortalOrigin] = useState({ x: 0, y: 0 });
   const chatAreaRef = useRef<HTMLDivElement>(null);
+
+  const handleBackHome = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isExitingAssistant) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPortalOrigin({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    });
+    setIsExitingAssistant(true);
+
+    window.setTimeout(() => {
+      navigate("/home", { state: { fromAssistant: true } });
+    }, 720);
+  };
 
   const {
     agentStatus,
@@ -71,8 +78,12 @@ const AIAssistant: React.FC = () => {
 
   return (
     <RequireAuth>
-      <div className="sitor-workbench">
-        {/* 左侧会话侧边栏（仿 Sitor 风格） */}
+      <div className="assistant-workbench">
+        {/* 背景科技网格质感（契合 Home 页面） */}
+        <div className="assistant-workbench__grid" aria-hidden="true" />
+        <div className="assistant-workbench__ambient" aria-hidden="true" />
+
+        {/* 左侧售前方案与会话侧边栏 */}
         <AssistantSidebar
           isOpen={isSidebarOpen}
           collapsed={isSidebarCollapsed}
@@ -87,61 +98,81 @@ const AIAssistant: React.FC = () => {
         />
 
         {/* 右侧主交互区 */}
-        <main className="sitor-workbench__main">
-          {/* 顶部极简 Topbar */}
-          <header className="sitor-topbar">
-            <div className="sitor-topbar__left">
+        <main className="assistant-workbench__main">
+          {/* 顶部现代化 Topbar */}
+          <header className="assistant-topbar">
+            <div className="assistant-topbar__left">
               <button
-                className="sitor-icon-btn sitor-menu-btn"
+                className="assistant-icon-btn assistant-menu-btn"
                 type="button"
                 aria-label="打开侧边栏"
                 onClick={() => setIsSidebarOpen(true)}
               >
                 <MenuOutlined />
               </button>
-              <div className="sitor-topbar-title-wrap">
-                <span className="sitor-topbar-title">
-                  {currentConv?.label || "AI Assistant"}
+              <div className="assistant-topbar-title-wrap">
+                <span className="section-kicker">ERP + CRM · PRE-SALES & CPQ</span>
+                <span className="assistant-topbar-title">
+                  {currentConv?.label || "AI 售前营销助手"}
                 </span>
-                <span className="sitor-topbar-subtitle">AI 1v1 精通私教</span>
               </div>
             </div>
 
-            <div className="sitor-topbar__right">
-              <Tag color="gold" className="sitor-pro-badge">
-                PRO
-              </Tag>
+            <div className="assistant-topbar__right">
+              <div className="assistant-topbar-status">
+                <span className="assistant-topbar-status__dot" />
+                <span className="assistant-topbar-status__text">PRE-SALES ENGINE READY</span>
+              </div>
+
               <button
-                className="sitor-topbar-back-btn"
+                className="assistant-topbar-back-btn"
                 type="button"
-                onClick={() => navigate("/home")}
+                onClick={handleBackHome}
               >
-                返回首页
+                <RollbackOutlined />
+                <span>返回工作台</span>
               </button>
             </div>
           </header>
 
-          {/* 中央主体区域（单屏不出现整体滚动条） */}
-          <div className="sitor-workbench__content">
-            <div className="sitor-chat-scroll-area" ref={chatAreaRef}>
+          {/* 中央主体区域 */}
+          <div className="assistant-workbench__content">
+            <div className="assistant-chat-scroll-area" ref={chatAreaRef}>
               {isFirstScreen ? (
-                /* 首屏展示：居中 Sitor 极简大标语与 6 宫格药丸推荐卡片 */
-                <div className="sitor-hero-section">
-                  <div className="sitor-hero-mark">
-                    <span className="sitor-hero-brain-icon">💡</span>
-                  </div>
-                  <h1 className="sitor-hero-title">你好，我是 Sitor</h1>
-                  <p className="sitor-hero-desc">
-                    告诉我你对什么感兴趣，从零到精通，我带你
-                  </p>
+                /* 首屏展示：契合 Home 页面 Entry 风格的智能科技核心 Hero 与推荐场景 */
+                <div className="assistant-hero-section">
+                  <div className="assistant-hero-entry">
+                    <div className="assistant-hero-orbit" aria-hidden="true">
+                      <span className="assistant-hero-ring assistant-hero-ring--outer" />
+                      <span className="assistant-hero-ring assistant-hero-ring--middle" />
+                      <span className="assistant-hero-ring assistant-hero-ring--inner" />
+                      <span className="assistant-hero-core">
+                        <CalculatorOutlined />
+                      </span>
+                      <span className="assistant-hero-node assistant-hero-node--one" />
+                      <span className="assistant-hero-node assistant-hero-node--two" />
+                      <span className="assistant-hero-node assistant-hero-node--three" />
+                    </div>
 
-                  <div className="sitor-hero-prompts">
+                    <div className="assistant-hero-copy">
+                      <div className="assistant-hero-eyebrow">
+                        <span className="assistant-hero-signal" />
+                        <span>PRE-SALES & MARKETING COPILOT</span>
+                      </div>
+                      <h1 className="assistant-hero-title">AI 售前营销助手</h1>
+                      <p className="assistant-hero-desc">
+                        基于 CRM 客户需求与 ERP 供应链物料库，快速完成智能配置选型、实时成本与毛利测算、生成标准化报价方案与售前赢单话术。
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="assistant-hero-prompts">
                     <PromptSuggestions onSelect={sendMessage} />
                   </div>
                 </div>
               ) : (
                 /* 真实对话消息流 */
-                <div className="sitor-messages-container">
+                <div className="assistant-messages-container">
                   <MessageList
                     messages={messages}
                     isThinking={isThinking}
@@ -154,7 +185,7 @@ const AIAssistant: React.FC = () => {
             </div>
 
             {/* 底部悬浮输入框 */}
-            <div className="sitor-composer-dock">
+            <div className="assistant-composer-dock">
               <ChatComposer
                 draft={draft}
                 isThinking={isThinking}
@@ -165,6 +196,32 @@ const AIAssistant: React.FC = () => {
             </div>
           </div>
         </main>
+
+        {/* 返回工作台圆形波纹扩展 Portal 动效 */}
+        {isExitingAssistant && (
+          <div
+            className="assistant-transition"
+            style={
+              {
+                "--transition-x": `${portalOrigin.x}px`,
+                "--transition-y": `${portalOrigin.y}px`,
+              } as React.CSSProperties
+            }
+            role="status"
+            aria-live="polite"
+          >
+            <div className="assistant-transition__ring assistant-transition__ring--one" />
+            <div className="assistant-transition__ring assistant-transition__ring--two" />
+            <div className="assistant-transition__ring assistant-transition__ring--three" />
+            <div className="assistant-transition__flash" />
+            <div className="assistant-transition__label">
+              <span className="assistant-transition__label-mark">
+                <RollbackOutlined />
+              </span>
+              <span>正在返回工作台</span>
+            </div>
+          </div>
+        )}
       </div>
     </RequireAuth>
   );

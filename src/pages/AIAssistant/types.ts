@@ -25,6 +25,8 @@ export type PromptSuggestion = {
   label: string;
   description?: string;
   icon?: ElementType;
+  category?: string;
+  tone?: "blue" | "cyan" | "violet" | "orange";
 };
 
 export type ConversationItem = {

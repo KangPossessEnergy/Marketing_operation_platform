@@ -1,29 +1,26 @@
 import React from "react";
 import {
-  CheckCircleFilled,
+  CalculatorOutlined,
   CloseOutlined,
-  CommentOutlined,
   DeleteOutlined,
-  HistoryOutlined,
+  FileDoneOutlined,
   LeftOutlined,
   PlusOutlined,
   RightOutlined,
-  RobotOutlined,
   SettingOutlined,
-  UnorderedListOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 import { Conversations } from "@ant-design/x";
 import type { ConversationItemType } from "@ant-design/x";
-import { Button, Tooltip } from "antd";
 import type {
   AgentConnectionStatus,
   AssistantSidebarProps,
 } from "../types";
 
 const statusLabels: Record<AgentConnectionStatus, string> = {
-  checking: "引擎连接中",
-  online: "引擎在线",
-  offline: "引擎离线",
+  checking: "服务连接中",
+  online: "报价引擎在线",
+  offline: "服务离线",
 };
 
 const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
@@ -38,47 +35,49 @@ const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
   onNewConversation,
   onDeleteConversation,
 }) => {
-  // 转换为 Ant Design X Conversations 格式并映射时间分组 (模仿 Sitor)
+  // 转换为 Ant Design X Conversations 格式并映射
   const conversationItems: ConversationItemType[] = conversations.map(
     (item) => ({
       key: item.key,
       label: (
-        <div className="sitor-conv-item">
-          <CommentOutlined className="sitor-conv-item__icon" />
-          <div className="sitor-conv-item__text">
-            <span className="sitor-conv-item__title">{item.label}</span>
-            <span className="sitor-conv-item__time">{item.time}</span>
+        <div className="assistant-conv-item">
+          <span className="assistant-conv-item__icon">
+            <FileDoneOutlined />
+          </span>
+          <div className="assistant-conv-item__text">
+            <span className="assistant-conv-item__title">{item.label}</span>
+            <span className="assistant-conv-item__time">{item.time}</span>
           </div>
         </div>
       ),
       timestamp: item.timestamp,
-      group: item.group || "新对话",
+      group: item.group || "方案与咨询",
     }),
   );
 
   return (
     <aside
-      className={`sitor-sidebar ${
-        isOpen ? "sitor-sidebar--open" : ""
-      } ${collapsed ? "sitor-sidebar--collapsed" : ""}`}
+      className={`assistant-sidebar ${
+        isOpen ? "assistant-sidebar--open" : ""
+      } ${collapsed ? "assistant-sidebar--collapsed" : ""}`}
     >
-      {/* 顶部 Brand 区域 */}
-      <div className="sitor-sidebar__brand">
-        <div className="sitor-brand-logo">
-          <span className="sitor-brand-icon">
-            <RobotOutlined />
+      {/* 顶部 Brand 区域 - 对齐 ERP+CRM 售前营销助手 */}
+      <div className="assistant-sidebar__brand">
+        <div className="assistant-brand-logo">
+          <span className="assistant-brand-icon">
+            <CalculatorOutlined />
           </span>
           {!collapsed && (
-            <div className="sitor-brand-info">
-              <span className="sitor-brand-name">AI Assistant</span>
-              <span className="sitor-brand-sub">营销运营私教</span>
+            <div className="assistant-brand-info">
+              <span className="assistant-brand-name">AI 售前营销助手</span>
+              <span className="assistant-brand-sub">PRE-SALES & CPQ</span>
             </div>
           )}
         </div>
 
         {onToggleCollapse && (
           <button
-            className="sitor-collapse-btn"
+            className="assistant-collapse-btn"
             onClick={onToggleCollapse}
             type="button"
             title={collapsed ? "展开侧边栏" : "收起侧边栏"}
@@ -88,7 +87,7 @@ const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
         )}
 
         <button
-          className="sitor-close-mobile-btn"
+          className="assistant-close-mobile-btn"
           type="button"
           aria-label="关闭侧栏"
           onClick={onClose}
@@ -98,28 +97,31 @@ const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
       </div>
 
       {/* 新建会话操作按钮 */}
-      <div className="sitor-sidebar__action">
-        <Button
-          type="default"
-          icon={<PlusOutlined />}
-          className="sitor-new-chat-btn"
+      <div className="assistant-sidebar__action">
+        <button
+          type="button"
+          className="assistant-new-chat-btn"
           onClick={onNewConversation}
-          block
         >
-          {!collapsed && <span>新对话</span>}
-        </Button>
+          <span className="assistant-new-chat-icon">
+            <PlusOutlined />
+          </span>
+          {!collapsed && (
+            <span className="assistant-new-chat-label">新建售前方案</span>
+          )}
+        </button>
       </div>
 
       {/* 会话列表区域 */}
-      <div className="sitor-sidebar__list-wrap">
+      <div className="assistant-sidebar__list-wrap">
         {!collapsed && (
-          <div className="sitor-list-header">
-            <span>新对话</span>
-            <span className="sitor-list-count">{conversations.length}</span>
+          <div className="assistant-list-header">
+            <span className="section-kicker">QUOTATIONS & LEADS</span>
+            <span className="assistant-list-count">{conversations.length}</span>
           </div>
         )}
 
-        <div className="sitor-conversations-container">
+        <div className="assistant-conversations-container">
           <Conversations
             items={conversationItems}
             activeKey={activeConversationKey}
@@ -131,7 +133,7 @@ const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
               items: [
                 {
                   key: "delete",
-                  label: "删除会话",
+                  label: "删除记录",
                   icon: <DeleteOutlined />,
                   danger: true,
                   onClick: () => onDeleteConversation?.(item.key),
@@ -143,21 +145,21 @@ const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
       </div>
 
       {/* 底部功能栏 */}
-      <div className="sitor-sidebar__footer">
-        <div className="sitor-footer-status">
+      <div className="assistant-sidebar__footer">
+        <div className="assistant-footer-status">
           <span
-            className={`sitor-status-dot sitor-status-dot--${agentStatus}`}
+            className={`assistant-status-dot assistant-status-dot--${agentStatus}`}
           />
           {!collapsed && (
-            <span className="sitor-status-text">
+            <span className="assistant-status-text">
               {statusLabels[agentStatus]}
             </span>
           )}
         </div>
 
-        <button className="sitor-footer-btn" type="button" title="设置">
+        <button className="assistant-footer-btn" type="button" title="设置">
           <SettingOutlined />
-          {!collapsed && <span>助手配置</span>}
+          {!collapsed && <span>报价规则配置</span>}
         </button>
       </div>
     </aside>

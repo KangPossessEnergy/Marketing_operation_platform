@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { message } from "antd";
 import {
   AppstoreOutlined,
@@ -9,7 +9,7 @@ import {
   ShopOutlined,
   SolutionOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "umi";
+import { useLocation, useNavigate } from "umi";
 import "./index.less";
 
 type WorkbenchCard = {
@@ -60,8 +60,21 @@ const shortcuts = [
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-  const [isOpeningAssistant, setIsOpeningAssistant] = React.useState(false);
-  const [portalOrigin, setPortalOrigin] = React.useState({ x: 0, y: 0 });
+  const location = useLocation();
+  const [isOpeningAssistant, setIsOpeningAssistant] = useState(false);
+  const [isReturningFromAssistant, setIsReturningFromAssistant] = useState(false);
+  const [portalOrigin, setPortalOrigin] = useState({ x: 0, y: 0 });
+
+  // 监听路由状态：从 AI 售前助手返回时触发“荡然慢慢进”流体波纹微动效
+  useEffect(() => {
+    if ((location.state as any)?.fromAssistant) {
+      setIsReturningFromAssistant(true);
+      const timer = window.setTimeout(() => {
+        setIsReturningFromAssistant(false);
+      }, 1800);
+      return () => window.clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const openModule = (title: string) => {
     message.info(`${title}模块正在建设中`);
@@ -85,7 +98,16 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="home-page">
+    <div className={`home-page ${isReturningFromAssistant ? "home-page--ripple-in" : ""}`}>
+      {/* 从 AI 助手返回时的“水波涟漪·荡然而入”流体环境光效 */}
+      {isReturningFromAssistant && (
+        <div className="home-ripple-ambient" aria-hidden="true">
+          <div className="home-ripple-wave home-ripple-wave--1" />
+          <div className="home-ripple-wave home-ripple-wave--2" />
+          <div className="home-ripple-wave home-ripple-wave--3" />
+          <div className="home-ripple-glow" />
+        </div>
+      )}
       <section className="home-hero" aria-labelledby="home-title">
         <div className="home-hero__copy">
           <span className="home-hero__eyebrow">Tmall Genie · Home Intelligence</span>
