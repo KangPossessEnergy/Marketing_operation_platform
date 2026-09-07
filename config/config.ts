@@ -45,6 +45,11 @@ export default defineConfig({
       changeOrigin: true,
       pathRewrite: { '^/api': '' },
     },
+    '/agent-api': {
+      target: process.env.AGENT_SERVER_URL || 'http://127.0.0.1:3001',
+      changeOrigin: true,
+      pathRewrite: { '^/agent-api': '/api' },
+    },
   },
   //9 配置网站标题
   title: '营销运营平台',
