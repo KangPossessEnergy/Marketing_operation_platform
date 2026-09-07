@@ -33,7 +33,6 @@ export const toQueryParams = (
   page: number,
   pageSize: number
 ): QueryAccountsParams => {
-  const keyword = normalizeValue(filters.keyword);
   const username = normalizeValue(filters.username);
   const phone = normalizeValue(filters.phone);
   const roleName = normalizeValue(filters.roleName);
@@ -41,13 +40,10 @@ export const toQueryParams = (
   const firstAgent = normalizeValue(filters.firstAgent);
   const secondAgent = normalizeValue(filters.secondAgent);
 
-  // 兼容后端单 keyword 检索或多字段独立检索
-  const resolvedKeyword = keyword || username || phone;
 
   return {
     page,
     pageSize,
-    ...(resolvedKeyword ? { keyword: resolvedKeyword } : {}),
     ...(username ? { username } : {}),
     ...(phone ? { phone } : {}),
     ...(roleName ? { roleName } : {}),
