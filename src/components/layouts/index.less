@@ -1,8 +1,36 @@
 .app-layout {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: #eff5ff;
 }
 
 .app-layout__content {
-  min-height: calc(100vh - 72px);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  /* 自定义轻量滚动条样式 */
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(140, 160, 185, 0.35);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(140, 160, 185, 0.6);
+    }
+  }
 }
+
