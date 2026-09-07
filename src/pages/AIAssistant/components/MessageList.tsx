@@ -6,6 +6,7 @@ import type { MessageListProps } from "../types";
 const MessageList: React.FC<MessageListProps> = ({
   messages,
   isThinking,
+  hasStreamingText,
   thinkingStatus,
 }) => (
   <div className="ai-message-list">
@@ -28,7 +29,7 @@ const MessageList: React.FC<MessageListProps> = ({
           </div>
         </article>
       ))}
-    {isThinking && (
+    {isThinking && !hasStreamingText && (
       <article className="ai-message ai-message--assistant">
         <div className="ai-message__avatar">
           <RobotOutlined />

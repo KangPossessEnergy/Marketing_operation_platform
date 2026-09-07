@@ -30,6 +30,8 @@ type StreamAgentChatOptions = {
   onEvent: (event: AgentStreamEvent) => void;
 };
 
+const SSE_EVENT_SEPARATOR = /\r?\n\r?\n/;
+
 const getResponseError = async (response: Response) => {
   try {
     const payload = (await response.json()) as { error?: string; message?: string };
@@ -61,6 +63,40 @@ const parseSseEvent = (
   onEvent(event);
 };
 
+const consumeSseStream = async (
+  body: ReadableStream<Uint8Array>,
+  onEvent: (event: AgentStreamEvent) => void,
+  signal?: AbortSignal,
+) => {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      buffer += decoder.decode(value, { stream: !done });
+
+      const blocks = buffer.split(SSE_EVENT_SEPARATOR);
+      buffer = blocks.pop() || "";
+      blocks.forEach((block) => parseSseEvent(block, onEvent));
+
+      if (done) {
+        break;
+      }
+    }
+
+    if (buffer.trim()) {
+      parseSseEvent(buffer, onEvent);
+    }
+  } finally {
+    if (signal?.aborted) {
+      await reader.cancel();
+    }
+    reader.releaseLock();
+  }
+};
+
 export const checkAgentHealth = async (signal?: AbortSignal) => {
   const response = await fetch(AGENT_HEALTH_URL, {
     cache: "no-store",
@@ -82,6 +118,7 @@ export const streamAgentChat = async (
     response = await fetch(AGENT_CHAT_URL, {
       method: "POST",
       headers: {
+        Accept: "text/event-stream",
         "Content-Type": "application/json",
       },
       body: JSON.stringify(params),
@@ -106,24 +143,5 @@ export const streamAgentChat = async (
     throw new Error("当前浏览器无法读取 Agent 流式响应");
   }
 
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    buffer += decoder.decode(value, { stream: !done });
-
-    const blocks = buffer.split(/\r?\n\r?\n/);
-    buffer = blocks.pop() || "";
-    blocks.forEach((block) => parseSseEvent(block, onEvent));
-
-    if (done) {
-      break;
-    }
-  }
-
-  if (buffer.trim()) {
-    parseSseEvent(buffer, onEvent);
-  }
+  await consumeSseStream(response.body, onEvent, signal);
 };

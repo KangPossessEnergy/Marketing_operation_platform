@@ -1,7 +1,7 @@
 //webpakc的配置(非运行时配置)
-import { defineConfig } from 'umi';
+import { defineConfig } from "umi";
 
-import { routes } from './routes';
+import { routes } from "./routes";
 
 export default defineConfig({
   /*   基础配置   */
@@ -15,7 +15,7 @@ export default defineConfig({
   //关闭sourcemap文件生成,无法定位到源码
   // devtool: false,
   //开发环境使用关闭sourcemap文件生成,生产环境不使用
-  devtool: process.env.NODE_ENV === 'development' ? 'eval' : false,
+  devtool: process.env.NODE_ENV === "development" ? "eval" : false,
 
   //3 开启hash模式   打包后的产物会带上hash值
   hash: true,
@@ -26,7 +26,7 @@ export default defineConfig({
 
   //5 配置js的压缩方式
   //开启多线程
-  jsMinifier: 'esbuild',
+  jsMinifier: "esbuild",
 
   //6 tree shaking
   jsMinifierOptions: {
@@ -36,23 +36,26 @@ export default defineConfig({
   },
   esbuildMinifyIIFE: true,
 
-
   //8 配置打包后资源的导入路径, 默认是/   开发环境不用配,生产环境也就是项目部署的时候需要配
-  publicPath: process.env.NODE_ENV === 'development' ? '/' : '/abc/',
+  publicPath: process.env.NODE_ENV === "development" ? "/" : "/abc/",
   proxy: {
-    '/api': {
-      target: 'http://127.0.0.1:3000',
+    "/api": {
+      target: "http://127.0.0.1:3000",
       changeOrigin: true,
-      pathRewrite: { '^/api': '' },
+      pathRewrite: { "^/api": "" },
     },
-    '/agent-api': {
-      target: process.env.AGENT_SERVER_URL || 'http://127.0.0.1:3001',
+    "/agent-api": {
+      target: process.env.AGENT_SERVER_URL || "http://127.0.0.1:3001",
       changeOrigin: true,
-      pathRewrite: { '^/agent-api': '/api' },
+      pathRewrite: { "^/agent-api": "/api" },
+      // 保证代理不对 SSE 进行压缩与缓冲
+      headers: {
+        "Accept-Encoding": "identity", // 避免 gzip 压缩导致的缓冲区积攒
+      },
     },
   },
   //9 配置网站标题
-  title: '营销运营平台',
+  title: "营销运营平台",
 
   // 配置路由
   routes,
@@ -60,5 +63,5 @@ export default defineConfig({
     exclude: [/\/components\//], // 排除自动生成路由的目录
   },
   //使用的包管理器是
-  npmClient: 'pnpm',
+  npmClient: "pnpm",
 });

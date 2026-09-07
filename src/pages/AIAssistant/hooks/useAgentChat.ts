@@ -186,6 +186,10 @@ const useAgentChat = () => {
   return {
     agentStatus,
     draft,
+    hasStreamingText:
+      isThinking &&
+      messages[messages.length - 1]?.role === "assistant" &&
+      messages[messages.length - 1].content.length > 0,
     isThinking,
     messages,
     sendMessage,

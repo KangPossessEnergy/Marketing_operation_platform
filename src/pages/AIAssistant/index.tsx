@@ -17,6 +17,7 @@ const AIAssistant: React.FC = () => {
   const {
     agentStatus,
     draft,
+    hasStreamingText,
     isThinking,
     messages,
     sendMessage,
@@ -53,6 +54,7 @@ const AIAssistant: React.FC = () => {
               <MessageList
                 messages={messages}
                 isThinking={isThinking}
+                hasStreamingText={hasStreamingText}
                 thinkingStatus={thinkingStatus}
               />
               {messages.length === 1 && !isThinking && (

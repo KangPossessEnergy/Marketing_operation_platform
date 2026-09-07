@@ -40,6 +40,7 @@ export type ConversationHeaderProps = {
 export type MessageListProps = {
   messages: ChatMessage[];
   isThinking: boolean;
+  hasStreamingText: boolean;
   thinkingStatus: string;
 };
 
