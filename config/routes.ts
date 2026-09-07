@@ -14,6 +14,12 @@ export const routes: any = [
     layout: false,
   },
   {
+    name: "AI助手工作台",
+    path: "/ai-assistant",
+    component: "@/pages/AIAssistant",
+    layout: false,
+  },
+  {
     name: "全局布局",
     component: "@/layouts/index",
     layout: false,

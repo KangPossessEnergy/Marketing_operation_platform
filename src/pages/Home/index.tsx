@@ -3,11 +3,13 @@ import { message } from "antd";
 import {
   AppstoreOutlined,
   BarChartOutlined,
+  BulbOutlined,
   HomeOutlined,
   RightOutlined,
   ShopOutlined,
   SolutionOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "umi";
 import "./index.less";
 
 type WorkbenchCard = {
@@ -57,8 +59,29 @@ const shortcuts = [
 ];
 
 const Home: React.FC = () => {
+  const navigate = useNavigate();
+  const [isOpeningAssistant, setIsOpeningAssistant] = React.useState(false);
+  const [portalOrigin, setPortalOrigin] = React.useState({ x: 0, y: 0 });
+
   const openModule = (title: string) => {
     message.info(`${title}模块正在建设中`);
+  };
+
+  const openAssistant = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isOpeningAssistant) {
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPortalOrigin({
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    });
+    setIsOpeningAssistant(true);
+
+    window.setTimeout(() => {
+      navigate("/ai-assistant");
+    }, 720);
   };
 
   return (
@@ -73,6 +96,44 @@ const Home: React.FC = () => {
           <span className="home-hero__status-dot" />
           <span>系统运行正常</span>
           <span className="home-hero__status-date">2026年09月05日</span>
+        </div>
+      </section>
+
+      <section className="assistant-entry" aria-labelledby="assistant-entry-title">
+        <div className="assistant-entry__grid" aria-hidden="true" />
+        <div className="assistant-entry__scanline" aria-hidden="true" />
+        <div className="assistant-entry__content">
+          <div className="assistant-entry__eyebrow">
+            <span className="assistant-entry__signal" />
+            <span>AI OPERATING CONSOLE</span>
+            <span className="assistant-entry__eyebrow-line" />
+            <span>READY</span>
+          </div>
+          <h2 id="assistant-entry-title">把运营灵感，交给 AI 接力</h2>
+          <p>从洞察、策略到执行，让每一次业务动作都更快找到下一步。</p>
+          <button className="assistant-entry__button" type="button" onClick={openAssistant}>
+            <span className="assistant-entry__button-icon">
+              <BulbOutlined />
+            </span>
+            <span className="assistant-entry__button-copy">
+              <strong>进入 AI 助手</strong>
+              <small>打开专属智能工作台</small>
+            </span>
+            <span className="assistant-entry__button-arrow" aria-hidden="true">
+              <RightOutlined />
+            </span>
+          </button>
+        </div>
+        <div className="assistant-entry__orbit" aria-hidden="true">
+          <span className="assistant-entry__orbit-ring assistant-entry__orbit-ring--outer" />
+          <span className="assistant-entry__orbit-ring assistant-entry__orbit-ring--middle" />
+          <span className="assistant-entry__orbit-ring assistant-entry__orbit-ring--inner" />
+          <span className="assistant-entry__core">
+            <BulbOutlined />
+          </span>
+          <span className="assistant-entry__orbit-node assistant-entry__orbit-node--one" />
+          <span className="assistant-entry__orbit-node assistant-entry__orbit-node--two" />
+          <span className="assistant-entry__orbit-node assistant-entry__orbit-node--three" />
         </div>
       </section>
 
@@ -139,6 +200,31 @@ const Home: React.FC = () => {
           ))}
         </div>
       </section>
+
+      {isOpeningAssistant && (
+        <div
+          className="assistant-transition"
+          style={
+            {
+              "--transition-x": `${portalOrigin.x}px`,
+              "--transition-y": `${portalOrigin.y}px`,
+            } as React.CSSProperties
+          }
+          role="status"
+          aria-live="polite"
+        >
+          <div className="assistant-transition__ring assistant-transition__ring--one" />
+          <div className="assistant-transition__ring assistant-transition__ring--two" />
+          <div className="assistant-transition__ring assistant-transition__ring--three" />
+          <div className="assistant-transition__flash" />
+          <div className="assistant-transition__label">
+            <span className="assistant-transition__label-mark">
+              <BulbOutlined />
+            </span>
+            <span>正在唤醒 AI 工作台</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
