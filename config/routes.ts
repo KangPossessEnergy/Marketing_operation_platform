@@ -28,6 +28,11 @@ export const routes: any = [
         path: "/settings/:section",
         component: "@/pages/BasicSettings",
       },
+      {
+        name: "业务模块",
+        path: "/modules/:module/:page",
+        component: "@/pages/ModulePlaceholder",
+      },
     ],
   },
 

@@ -60,7 +60,7 @@
 
 .header-menu__panel {
   position: fixed;
-  top: 71px;
+  top: 56px;
   left: 0;
   z-index: 30;
   display: grid;
@@ -161,6 +161,23 @@
   }
 
   .header-menu__panel {
-    display: none;
+    top: 110px;
+    min-height: 0;
+    max-height: calc(100vh - 110px);
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .header-menu__aside {
+    min-height: 72px;
+  }
+
+  .header-menu__content {
+    padding: 28px 20px;
+  }
+
+  .header-menu__groups {
+    grid-template-columns: 1fr;
+    gap: 28px;
   }
 }

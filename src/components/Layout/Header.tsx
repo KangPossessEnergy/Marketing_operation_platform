@@ -11,7 +11,11 @@ import { clearAll, getUserInfo } from "@/utils/localStorage";
 import { publishSuccess } from "@/utils/mitt";
 import { useLocation, useNavigate } from "umi";
 import "./Header.less";
-import HeaderMenu, { type HeaderMenuNode } from "./HeaderMenu";
+import HeaderMenu, {
+  findHeaderMenuTrail,
+  headerMenuData,
+  type HeaderMenuNode,
+} from "./HeaderMenu";
 
 type CurrentUser = {
   id?: string;
@@ -47,13 +51,7 @@ const Header: React.FC = () => {
           : "未获取到登录信息";
 
   const selectedKey = useMemo(() => {
-    if (location.pathname === "/home" || location.pathname === "/") {
-      return "mall";
-    }
-    if (location.pathname.startsWith("/settings/")) {
-      return "settings";
-    }
-    return "mall";
+    return findHeaderMenuTrail(headerMenuData, location.pathname)[0]?.key || "";
   }, [location.pathname]);
 
   const userMenuItems: MenuProps["items"] = [
