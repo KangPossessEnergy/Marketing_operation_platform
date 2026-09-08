@@ -80,6 +80,7 @@ const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
             className="assistant-collapse-btn"
             onClick={onToggleCollapse}
             type="button"
+            aria-label={collapsed ? "展开侧边栏" : "收起侧边栏"}
             title={collapsed ? "展开侧边栏" : "收起侧边栏"}
           >
             {collapsed ? <RightOutlined /> : <LeftOutlined />}
@@ -121,27 +122,29 @@ const AssistantSidebar: React.FC<AssistantSidebarProps> = ({
           </div>
         )}
 
-        <div className="assistant-conversations-container">
-          <Conversations
-            items={conversationItems}
-            activeKey={activeConversationKey}
-            onActiveChange={(key) => {
-              onSelectConversation(key);
-              onClose();
-            }}
-            menu={(item) => ({
-              items: [
-                {
-                  key: "delete",
-                  label: "删除记录",
-                  icon: <DeleteOutlined />,
-                  danger: true,
-                  onClick: () => onDeleteConversation?.(item.key),
-                },
-              ],
-            })}
-          />
-        </div>
+        {!collapsed && (
+          <div className="assistant-conversations-container">
+            <Conversations
+              items={conversationItems}
+              activeKey={activeConversationKey}
+              onActiveChange={(key) => {
+                onSelectConversation(key);
+                onClose();
+              }}
+              menu={(item) => ({
+                items: [
+                  {
+                    key: "delete",
+                    label: "删除记录",
+                    icon: <DeleteOutlined />,
+                    danger: true,
+                    onClick: () => onDeleteConversation?.(item.key),
+                  },
+                ],
+              })}
+            />
+          </div>
+        )}
       </div>
 
       {/* 底部功能栏 */}

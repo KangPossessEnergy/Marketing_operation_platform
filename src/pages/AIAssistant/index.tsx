@@ -56,7 +56,8 @@ const AIAssistant: React.FC = () => {
 
   const handleNewConversation = () => {
     startNewConversation();
-    setIsSidebarOpen(false);
+    setIsSidebarCollapsed(false);
+    setIsSidebarOpen(true);
   };
 
   const currentConv = conversations.find(
