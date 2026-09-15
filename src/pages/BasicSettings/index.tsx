@@ -1,15 +1,38 @@
-import React, { useMemo, useState } from "react";
-import { Button, Input, Table, Tag, Tree } from "antd";
-import type { TreeDataNode } from "antd";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ApartmentOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  MoreOutlined,
   PlusOutlined,
+  ReloadOutlined,
   SearchOutlined,
+  ShopOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
+import {
+  Button,
+  Dropdown,
+  Empty,
+  Input,
+  Modal,
+  Spin,
+  Tag,
+  Tree,
+} from "antd";
+import type { DataNode, TreeProps } from "antd/es/tree";
 import { useParams } from "umi";
 import PageBreadcrumb from "@/components/Common/PageBreadcrumb";
+import { OrganizationServices } from "@/services/Organization";
+import type {
+  CreateOrganizationNodeParams,
+  OrganizationNode,
+  OrganizationNodeType,
+  UpdateOrganizationNodeParams,
+} from "@/services/Organization";
+import { publishSuccess } from "@/utils/mitt";
 import UserManagement from "./components/UserManagement";
+import OrganizationFormModal from "./components/OrganizationFormModal";
 import "./index.less";
 
 type SettingSection = {
@@ -18,20 +41,11 @@ type SettingSection = {
   description: string;
 };
 
-type Department = {
-  key: string;
-  name: string;
-  code: string;
-  manager: string;
-  memberCount: number;
-  status: "启用" | "停用";
-};
-
 const settingSections: Record<string, SettingSection> = {
   "organization-structure": {
     title: "组织架构",
     group: "组织管理",
-    description: "维护企业部门层级与成员归属，统一管理组织信息。",
+    description: "维护平台、区域、一级代理商与门店的归属关系。",
   },
   "store-information": {
     title: "门店信息",
@@ -65,110 +79,360 @@ const settingSections: Record<string, SettingSection> = {
   },
 };
 
-const organizationTree: TreeDataNode[] = [
-  {
-    title: "KKdw 全屋智能",
-    key: "company",
-    icon: <ApartmentOutlined />,
-    children: [
-      {
-        title: "市场中心",
-        key: "marketing",
-        icon: <ApartmentOutlined />,
-        children: [
-          { title: "品牌部", key: "brand" },
-          { title: "渠道部", key: "channel" },
-        ],
-      },
-      {
-        title: "运营中心",
-        key: "operation",
-        icon: <ApartmentOutlined />,
-        children: [
-          { title: "商品运营部", key: "product-operation" },
-          { title: "客户运营部", key: "customer-operation" },
-        ],
-      },
-      {
-        title: "交付中心",
-        key: "delivery",
-        icon: <ApartmentOutlined />,
-        children: [
-          { title: "项目管理部", key: "project-management" },
-          { title: "售后服务部", key: "after-sales" },
-        ],
-      },
-    ],
-  },
-];
+const nodeTypeLabels: Record<OrganizationNodeType, string> = {
+  ROOT: "平台",
+  REGION: "区域",
+  AGENT: "一级代理商",
+  STORE: "门店",
+};
 
-const departments: Department[] = [
-  {
-    key: "marketing",
-    name: "市场中心",
-    code: "MARKETING",
-    manager: "李晓梅",
-    memberCount: 18,
-    status: "启用",
-  },
-  {
-    key: "operation",
-    name: "运营中心",
-    code: "OPERATION",
-    manager: "王志远",
-    memberCount: 26,
-    status: "启用",
-  },
-  {
-    key: "delivery",
-    name: "交付中心",
-    code: "DELIVERY",
-    manager: "陈思远",
-    memberCount: 32,
-    status: "启用",
-  },
-  {
-    key: "brand",
-    name: "品牌部",
-    code: "BRAND",
-    manager: "赵一鸣",
-    memberCount: 8,
-    status: "启用",
-  },
-  {
-    key: "channel",
-    name: "渠道部",
-    code: "CHANNEL",
-    manager: "周宁",
-    memberCount: 10,
-    status: "停用",
-  },
-];
+const nodeIcons: Record<OrganizationNodeType, React.ReactNode> = {
+  ROOT: <ApartmentOutlined />,
+  REGION: <ApartmentOutlined />,
+  AGENT: <TeamOutlined />,
+  STORE: <ShopOutlined />,
+};
+
+const flattenNodes = (nodes: OrganizationNode[]): OrganizationNode[] =>
+  nodes.flatMap((node) => [node, ...flattenNodes(node.children)]);
+
+const filterTree = (
+  nodes: OrganizationNode[],
+  keyword: string
+): OrganizationNode[] =>
+  nodes.reduce<OrganizationNode[]>((matchedNodes, node) => {
+    const matches = [node.name, node.code, node.contactName, node.address]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .includes(keyword);
+    const children = filterTree(node.children, keyword);
+
+    if (matches || children.length) {
+      matchedNodes.push({ ...node, children });
+    }
+
+    return matchedNodes;
+  }, []);
+
+const getChildType = (type: OrganizationNodeType): OrganizationNodeType => {
+  if (type === "ROOT") return "REGION";
+  if (type === "REGION") return "AGENT";
+  return "STORE";
+};
 
 const BasicSettings: React.FC = () => {
   const { section = "organization-structure" } = useParams<{ section: string }>();
-  const [selectedDepartment, setSelectedDepartment] = useState("marketing");
-  const [keyword, setKeyword] = useState("");
+  const [treeData, setTreeData] = useState<OrganizationNode[]>([]);
+  const [selectedId, setSelectedId] = useState<string>();
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [formNode, setFormNode] = useState<OrganizationNode>();
+  const [formParent, setFormParent] = useState<OrganizationNode>();
 
   const currentSection =
     settingSections[section] || settingSections["organization-structure"];
-
-  const filteredDepartments = useMemo(() => {
-    const normalizedKeyword = keyword.trim().toLowerCase();
-    if (!normalizedKeyword) {
-      return departments;
-    }
-
-    return departments.filter((department) =>
-      [department.name, department.code, department.manager]
-        .join(" ")
-        .toLowerCase()
-        .includes(normalizedKeyword)
-    );
-  }, [keyword]);
-
-  const isOrganizationPage = section === "organization-structure" || !settingSections[section];
+  const isOrganizationPage =
+    section === "organization-structure" || !settingSections[section];
   const isAccountPage = section === "account-information";
+  const allNodes = useMemo(() => flattenNodes(treeData), [treeData]);
+  const selectedNode = allNodes.find((node) => node.id === selectedId);
+  const filteredTreeData = useMemo(
+    () => filterTree(treeData, searchKeyword.trim().toLowerCase()),
+    [searchKeyword, treeData]
+  );
+
+  const loadTree = useCallback(async (preferredId?: string) => {
+    setLoading(true);
+    try {
+      const { data } = await OrganizationServices.listTree();
+      setTreeData(data.items);
+      setExpandedKeys((currentKeys) =>
+        currentKeys.length
+          ? currentKeys
+          : flattenNodes(data.items)
+              .filter((node) => node.children.length)
+              .map((node) => node.id)
+      );
+      const nextSelectedId =
+        preferredId && flattenNodes(data.items).some((node) => node.id === preferredId)
+          ? preferredId
+          : data.items[0]?.id;
+      setSelectedId(nextSelectedId);
+    } catch {
+      setTreeData([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOrganizationPage) {
+      void loadTree();
+    }
+  }, [isOrganizationPage, loadTree]);
+
+  const openCreate = (parent?: OrganizationNode) => {
+    setFormMode("create");
+    setFormNode(undefined);
+    setFormParent(parent);
+    setFormOpen(true);
+  };
+
+  const openEdit = async (node: OrganizationNode) => {
+    try {
+      const { data } = await OrganizationServices.getById(node.id);
+      setFormMode("edit");
+      setFormNode(data);
+      setFormParent(undefined);
+      setFormOpen(true);
+    } catch {
+      // 请求错误由全局监听器统一提示。
+    }
+  };
+
+  const removeNode = (node: OrganizationNode) => {
+    Modal.confirm({
+      title: `确认删除${nodeTypeLabels[node.type]}？`,
+      content: `删除“${node.name}”后将无法恢复，请确认该节点没有下级组织。`,
+      okText: "确认删除",
+      cancelText: "取消",
+      okButtonProps: { danger: true },
+      onOk: async () => {
+        try {
+          await OrganizationServices.remove(node.id);
+          publishSuccess(`“${node.name}”已删除`);
+          await loadTree(node.parentId ?? undefined);
+        } catch {
+          // 请求错误由全局监听器统一提示。
+        }
+      },
+    });
+  };
+
+  const handleFormSubmit = async (
+    values: CreateOrganizationNodeParams | UpdateOrganizationNodeParams
+  ) => {
+    try {
+      if (formMode === "edit" && formNode) {
+        await OrganizationServices.update(formNode.id, values);
+        publishSuccess("组织信息已更新");
+        setFormOpen(false);
+        await loadTree(formNode.id);
+      } else {
+        const params = {
+          ...values,
+          ...(formParent ? { parentId: formParent.id } : {}),
+        } as CreateOrganizationNodeParams;
+        const { data } = await OrganizationServices.create(params);
+        publishSuccess(`“${data.name}”已创建`);
+        setFormOpen(false);
+        await loadTree(data.id);
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const buildTreeData = (nodes: OrganizationNode[]): DataNode[] =>
+    nodes.map((node) => ({
+      key: node.id,
+      title: (
+        <div className="organization-node">
+          <span className="organization-node__name">
+            <span className="organization-node__icon">{nodeIcons[node.type]}</span>
+            <span>{node.name}</span>
+            <Tag className="organization-node__tag" bordered={false}>
+              {nodeTypeLabels[node.type]}
+            </Tag>
+          </span>
+          {(node.canCreateChild || node.canEdit || node.canDelete) && (
+            <Dropdown
+              menu={{
+                items: [
+                  ...(node.canCreateChild
+                    ? [
+                        {
+                          key: "create",
+                          icon: <PlusOutlined />,
+                          label: `新增${nodeTypeLabels[getChildType(node.type)]}`,
+                        },
+                      ]
+                    : []),
+                  ...(node.canEdit
+                    ? [{ key: "edit", icon: <EditOutlined />, label: "编辑节点" }]
+                    : []),
+                  ...(node.canDelete
+                    ? [
+                        {
+                          key: "delete",
+                          danger: true,
+                          icon: <DeleteOutlined />,
+                          label: "删除节点",
+                        },
+                      ]
+                    : []),
+                ],
+                onClick: ({ key }) => {
+                  if (key === "create") openCreate(node);
+                  if (key === "edit") void openEdit(node);
+                  if (key === "delete") removeNode(node);
+                },
+              }}
+              trigger={["click"]}
+            >
+              <Button
+                aria-label={`操作${node.name}`}
+                className="organization-node__actions"
+                icon={<MoreOutlined />}
+                onClick={(event) => event.stopPropagation()}
+                title={`操作${node.name}`}
+                type="text"
+              />
+            </Dropdown>
+          )}
+        </div>
+      ),
+      children: node.children.length ? buildTreeData(node.children) : undefined,
+    }));
+
+  const handleSelect: TreeProps["onSelect"] = (keys) => {
+    const nextId = String(keys[0] || "");
+    if (nextId) {
+      setSelectedId(nextId);
+    }
+  };
+
+  const renderOrganization = () => (
+    <section className="organization-workspace" aria-label="组织架构管理">
+      <aside className="organization-tree">
+        <div className="panel-heading">
+          <div>
+            <span className="panel-heading__eyebrow">ORGANIZATION</span>
+            <h2>组织目录</h2>
+          </div>
+          <Button
+            aria-label="刷新组织树"
+            icon={<ReloadOutlined />}
+            loading={loading}
+            onClick={() => void loadTree(selectedId)}
+            title="刷新组织树"
+            type="text"
+          />
+        </div>
+        <Input
+          allowClear
+          className="organization-tree__search"
+          prefix={<SearchOutlined />}
+          placeholder="搜索名称、编码或联系人"
+          value={searchKeyword}
+          onChange={(event) => setSearchKeyword(event.target.value)}
+        />
+        <Spin spinning={loading}>
+          {filteredTreeData.length ? (
+            <Tree
+              blockNode
+              expandedKeys={searchKeyword ? allNodes.map((node) => node.id) : expandedKeys}
+              onExpand={setExpandedKeys}
+              onSelect={handleSelect}
+              selectedKeys={selectedId ? [selectedId] : []}
+              treeData={buildTreeData(filteredTreeData)}
+            />
+          ) : (
+            <Empty
+              className="organization-tree__empty"
+              description={searchKeyword ? "没有匹配的组织节点" : "暂无组织节点"}
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            >
+              {!searchKeyword && (
+                <Button icon={<PlusOutlined />} onClick={() => openCreate()} type="primary">
+                  新增平台
+                </Button>
+              )}
+            </Empty>
+          )}
+        </Spin>
+      </aside>
+
+      <div className="organization-content">
+        {selectedNode ? (
+          <>
+            <div className="organization-detail__header">
+              <div>
+                <span className="panel-heading__eyebrow">ORGANIZATION DETAIL</span>
+                <h2>{selectedNode.name}</h2>
+                <Tag color="blue">{nodeTypeLabels[selectedNode.type]}</Tag>
+              </div>
+              <div className="organization-detail__actions">
+                {selectedNode.canCreateChild && (
+                  <Button
+                    icon={<PlusOutlined />}
+                    onClick={() => openCreate(selectedNode)}
+                    type="primary"
+                  >
+                    新增下级
+                  </Button>
+                )}
+                {selectedNode.canEdit && (
+                  <Button
+                    icon={<EditOutlined />}
+                    onClick={() => void openEdit(selectedNode)}
+                  >
+                    编辑
+                  </Button>
+                )}
+              </div>
+            </div>
+            <div className="organization-detail__body">
+              <div className="organization-detail__hero">
+                <span className="organization-detail__hero-icon">
+                  {nodeIcons[selectedNode.type]}
+                </span>
+                <div>
+                  <strong>{selectedNode.name}</strong>
+                  <span>{selectedNode.code}</span>
+                </div>
+              </div>
+              <dl className="organization-detail__fields">
+                <DetailField label="编码" value={selectedNode.code} />
+                <DetailField label="联系人" value={selectedNode.contactName} />
+                <DetailField label="联系电话" value={selectedNode.contactPhone} />
+                <DetailField label="地址" value={selectedNode.address} />
+                <DetailField label="区域" value={selectedNode.region} />
+                <DetailField label="省份" value={selectedNode.province} />
+                <DetailField
+                  label="下级节点"
+                  value={`${selectedNode.children.length} 个`}
+                />
+                <DetailField label="层级" value={`第 ${selectedNode.depth} 级`} />
+              </dl>
+            </div>
+          </>
+        ) : (
+          <Empty description="请选择一个组织节点" />
+        )}
+      </div>
+
+      <OrganizationFormModal
+        initialValues={formNode}
+        mode={formMode}
+        onFinish={handleFormSubmit}
+        onOpenChange={(open) => {
+          setFormOpen(open);
+          if (!open) {
+            setFormNode(undefined);
+            setFormParent(undefined);
+          }
+        }}
+        open={formOpen}
+        parent={formParent}
+      />
+    </section>
+  );
 
   return (
     <div className="settings-page">
@@ -185,135 +449,27 @@ const BasicSettings: React.FC = () => {
             <h1>{currentSection.title}</h1>
             <p>{currentSection.description}</p>
           </div>
-          {isOrganizationPage && (
-            <Button type="primary" icon={<PlusOutlined />}>
-              新增部门
+          {isOrganizationPage && !treeData.length && (
+            <Button
+              icon={<PlusOutlined />}
+              onClick={() => openCreate()}
+              type="primary"
+            >
+              新增平台
             </Button>
           )}
         </div>
       </div>
 
       {isOrganizationPage ? (
-        <section className="organization-workspace" aria-label="组织架构管理">
-          <aside className="organization-tree">
-            <div className="panel-heading">
-              <div>
-                <span className="panel-heading__eyebrow">ORGANIZATION</span>
-                <h2>组织目录</h2>
-              </div>
-              <Button aria-label="新增组织节点" icon={<PlusOutlined />} type="text" />
-            </div>
-            <Tree
-              blockNode
-              defaultExpandAll
-              treeData={organizationTree}
-              showIcon
-              selectedKeys={[selectedDepartment]}
-              onSelect={(keys) => {
-                if (keys[0]) {
-                  setSelectedDepartment(String(keys[0]));
-                }
-              }}
-            />
-          </aside>
-
-          <div className="organization-content">
-            <div className="organization-content__toolbar">
-              <div>
-                <span className="panel-heading__eyebrow">DEPARTMENT LIST</span>
-                <h2>部门列表</h2>
-              </div>
-              <Input
-                allowClear
-                prefix={<SearchOutlined />}
-                placeholder="搜索部门、编码或负责人"
-                value={keyword}
-                onChange={(event) => setKeyword(event.target.value)}
-              />
-            </div>
-
-            <div className="organization-summary">
-              <div className="summary-item">
-                <span className="summary-item__icon summary-item__icon--blue">
-                  <ApartmentOutlined />
-                </span>
-                <span>
-                  <small>部门总数</small>
-                  <strong>12</strong>
-                </span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-item__icon summary-item__icon--green">
-                  <TeamOutlined />
-                </span>
-                <span>
-                  <small>成员总数</small>
-                  <strong>76</strong>
-                </span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-item__icon summary-item__icon--orange">
-                  <ApartmentOutlined />
-                </span>
-                <span>
-                  <small>当前节点</small>
-                  <strong>
-                    {departments.find((department) => department.key === selectedDepartment)?.name ||
-                      "KKdw 全屋智能"}
-                  </strong>
-                </span>
-              </div>
-            </div>
-
-            <Table<Department>
-              columns={[
-                {
-                  title: "部门名称",
-                  dataIndex: "name",
-                  key: "name",
-                  render: (name: string, record) => (
-                    <div className="department-name">
-                      <span className="department-name__icon">
-                        <ApartmentOutlined />
-                      </span>
-                      <span>
-                        <strong>{name}</strong>
-                        <small>{record.code}</small>
-                      </span>
-                    </div>
-                  ),
-                },
-                { title: "负责人", dataIndex: "manager", key: "manager" },
-                { title: "成员数", dataIndex: "memberCount", key: "memberCount" },
-                {
-                  title: "状态",
-                  dataIndex: "status",
-                  key: "status",
-                  render: (status: Department["status"]) => (
-                    <Tag color={status === "启用" ? "success" : "default"}>{status}</Tag>
-                  ),
-                },
-                {
-                  title: "操作",
-                  key: "action",
-                  render: () => (
-                    <Button className="table-action" type="link">
-                      查看详情
-                    </Button>
-                  ),
-                },
-              ]}
-              dataSource={filteredDepartments}
-              pagination={false}
-              rowKey="key"
-              size="middle"
-            />
-          </div>
-        </section>
+        renderOrganization()
       ) : isAccountPage ? (
         <UserManagement />
       ) : (
-        <section className="settings-placeholder" aria-label={`${currentSection.title}页面`}>
+        <section
+          className="settings-placeholder"
+          aria-label={`${currentSection.title}页面`}
+        >
           <span className="settings-placeholder__icon">
             <ApartmentOutlined />
           </span>
@@ -324,5 +480,15 @@ const BasicSettings: React.FC = () => {
     </div>
   );
 };
+
+const DetailField: React.FC<{ label: string; value?: string | null }> = ({
+  label,
+  value,
+}) => (
+  <div>
+    <dt>{label}</dt>
+    <dd>{value || "-"}</dd>
+  </div>
+);
 
 export default BasicSettings;

@@ -70,14 +70,14 @@ cd Marketing_operation_platform
 # 2. 安装依赖 (请务必使用 pnpm，勿使用 npm 或 yarn)
 pnpm install
 
-# 3. 启动本地开发服务 (默认端口 8081)
+# 3. 启动本地开发服务 (默认端口 8080)
 pnpm dev
 
 # 4. 构建生产环境产物
 pnpm build
 ```
 
-启动后访问 `http://localhost:8081/`，系统将自动进行权限验证；未登录时会自动重定向到登录页 `/login`。
+启动后访问 `http://localhost:8080/`，系统将自动进行权限验证；未登录时会自动重定向到登录页 `/login`。
 
 ---
 
@@ -124,8 +124,9 @@ Marketing_operation_platform/
 > **注意**：`pnpm-workspace.yaml` 与 `pnpm-lock.yaml` 均包含工程级配置，请务必纳入版本控制，切勿忽略。
 
 ### 2. AI 助手工作台如何对接后端流式服务？
-前端在 `useAgentChat.ts` 中内置了标准 SSE 流式解析层：
-- 当后端 API 可用时，调用 `fetch` 流式接口按行读取 `text`、`step`、`tool-call`、`tool-result`、`done` 等事件。
+前端在 `src/services/Agent/index.ts` 中内置了 SSE 流式解析和协议归一化：
+- Agent 后端返回 AI SDK UI Message Stream，前端将 `text-delta`、`data-step`、`tool-input-available`、`tool-output-available`、`data-continue`、`data-max-steps`、`finish` 转换为页面内部事件。
+- 同时兼容旧版 `text`、`step`、`tool-call`、`tool-result`、`done` 等事件。
 - 当本地离线或无后端服务时，具备高保真 Mock 流式降级能力，便于单兵前端独立演练与功能展示。
 
 ---

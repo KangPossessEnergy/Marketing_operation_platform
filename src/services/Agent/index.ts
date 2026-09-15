@@ -19,6 +19,18 @@ export type AgentStreamEvent = {
   message?: string;
 };
 
+type AgentStreamChunk = {
+  type?: string;
+  data?: unknown;
+  delta?: unknown;
+  errorText?: unknown;
+  message?: unknown;
+  toolCallId?: unknown;
+  toolName?: unknown;
+  input?: unknown;
+  output?: unknown;
+};
+
 type AgentChatParams = {
   sessionId: string;
   message: string;
@@ -41,9 +53,89 @@ const getResponseError = async (response: Response) => {
   }
 };
 
+const normalizeAgentChunk = (
+  chunk: AgentStreamChunk,
+  toolNames: Map<string, string>,
+): AgentStreamEvent | null => {
+  switch (chunk.type) {
+    // Agent 当前返回 AI SDK UI Message Stream，前端内部继续使用稳定的领域事件。
+    case "data-step": {
+      const data = chunk.data;
+      if (
+        typeof data !== "object" ||
+        data === null ||
+        !("step" in data) ||
+        typeof data.step !== "number"
+      ) {
+        return null;
+      }
+      return { type: "step", step: data.step };
+    }
+    case "text-delta":
+      return typeof chunk.delta === "string"
+        ? { type: "text", delta: chunk.delta }
+        : null;
+    case "tool-input-available": {
+      const toolCallId =
+        typeof chunk.toolCallId === "string" ? chunk.toolCallId : "";
+      const toolName =
+        typeof chunk.toolName === "string" ? chunk.toolName : undefined;
+      if (toolCallId && toolName) {
+        toolNames.set(toolCallId, toolName);
+      }
+      return {
+        type: "tool-call",
+        toolName,
+        input: chunk.input,
+      };
+    }
+    case "tool-output-available": {
+      const toolCallId =
+        typeof chunk.toolCallId === "string" ? chunk.toolCallId : "";
+      const toolName = toolCallId ? toolNames.get(toolCallId) : undefined;
+      if (toolCallId) {
+        toolNames.delete(toolCallId);
+      }
+      return {
+        type: "tool-result",
+        toolName,
+        output: chunk.output,
+      };
+    }
+    case "data-continue":
+      return { type: "continue" };
+    case "data-max-steps":
+      return { type: "max-steps" };
+    case "finish":
+      return { type: "done" };
+    case "error": {
+      const errorMessage =
+        typeof chunk.errorText === "string"
+          ? chunk.errorText
+          : typeof chunk.message === "string"
+            ? chunk.message
+            : "Agent 处理请求失败";
+      throw new Error(errorMessage);
+    }
+
+    // 兼容旧版 Agent SSE，便于前后端逐步发布。
+    case "step":
+    case "text":
+    case "tool-call":
+    case "tool-result":
+    case "continue":
+    case "max-steps":
+    case "done":
+      return chunk as AgentStreamEvent;
+    default:
+      return null;
+  }
+};
+
 const parseSseEvent = (
   block: string,
   onEvent: (event: AgentStreamEvent) => void,
+  toolNames: Map<string, string>,
 ) => {
   const data = block
     .split(/\r?\n/)
@@ -55,12 +147,21 @@ const parseSseEvent = (
     return;
   }
 
-  const event = JSON.parse(data) as AgentStreamEvent;
-  if (event.type === "error") {
-    throw new Error(event.message || "Agent 处理请求失败");
+  if (data === "[DONE]") {
+    return;
   }
 
-  onEvent(event);
+  let chunk: AgentStreamChunk;
+  try {
+    chunk = JSON.parse(data) as AgentStreamChunk;
+  } catch {
+    throw new Error("Agent 返回了无效的流式消息");
+  }
+
+  const event = normalizeAgentChunk(chunk, toolNames);
+  if (event) {
+    onEvent(event);
+  }
 };
 
 const consumeSseStream = async (
@@ -71,6 +172,7 @@ const consumeSseStream = async (
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  const toolNames = new Map<string, string>();
 
   try {
     while (true) {
@@ -79,7 +181,7 @@ const consumeSseStream = async (
 
       const blocks = buffer.split(SSE_EVENT_SEPARATOR);
       buffer = blocks.pop() || "";
-      blocks.forEach((block) => parseSseEvent(block, onEvent));
+      blocks.forEach((block) => parseSseEvent(block, onEvent, toolNames));
 
       if (done) {
         break;
@@ -87,7 +189,7 @@ const consumeSseStream = async (
     }
 
     if (buffer.trim()) {
-      parseSseEvent(buffer, onEvent);
+      parseSseEvent(buffer, onEvent, toolNames);
     }
   } finally {
     if (signal?.aborted) {
