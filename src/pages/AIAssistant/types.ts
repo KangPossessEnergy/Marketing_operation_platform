@@ -14,6 +14,7 @@ export type ChatMessage = {
   role: "assistant" | "user";
   content: string;
   time: string;
+  reasoning?: string;
   thoughtChain?: ThoughtStep[];
   isStreaming?: boolean;
 };

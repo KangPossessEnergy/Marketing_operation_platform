@@ -187,8 +187,13 @@ export const useAgentChat = () => {
   const updateAssistantMessage = useCallback(
     (
       id: string,
-      updater: (prev: { content: string; thoughtChain?: ThoughtStep[] }) => {
+      updater: (prev: {
         content: string;
+        reasoning?: string;
+        thoughtChain?: ThoughtStep[];
+      }) => {
+        content: string;
+        reasoning?: string;
         thoughtChain?: ThoughtStep[];
       },
     ) => {
@@ -197,11 +202,13 @@ export const useAgentChat = () => {
           if (msg.id !== id) return msg;
           const updated = updater({
             content: msg.content,
+            reasoning: msg.reasoning,
             thoughtChain: msg.thoughtChain,
           });
           return {
             ...msg,
             content: updated.content,
+            reasoning: updated.reasoning,
             thoughtChain: updated.thoughtChain,
           };
         }),
@@ -219,10 +226,20 @@ export const useAgentChat = () => {
       let statusDescription = "";
 
       switch (event.type) {
+        case "reasoning": {
+          statusDescription = "Agent 正在深度思考...";
+          updateAssistantMessage(assistantMessageId, (prev) => ({
+            content: prev.content,
+            reasoning: (prev.reasoning || "") + (event.delta || ""),
+            thoughtChain: [...thoughtsCollector.list],
+          }));
+          break;
+        }
         case "text": {
           statusDescription = "Agent 正在生成回复...";
           updateAssistantMessage(assistantMessageId, (prev) => ({
             content: prev.content + (event.delta || ""),
+            reasoning: prev.reasoning,
             thoughtChain: [...thoughtsCollector.list],
           }));
           break;
@@ -422,6 +439,7 @@ export const useAgentChat = () => {
         role: "assistant",
         content: "",
         time: nowTimeStr,
+        reasoning: "",
         isStreaming: true,
         thoughtChain: [],
       };
@@ -491,6 +509,7 @@ export const useAgentChat = () => {
 
         updateAssistantMessage(assistantMessageId, (prev) => ({
           content: prev.content || finalContent,
+          reasoning: prev.reasoning,
           thoughtChain: thoughtsCollector.list,
         }));
 
@@ -511,6 +530,7 @@ export const useAgentChat = () => {
           error instanceof Error ? error.message : "Agent 服务暂时不可用";
         updateAssistantMessage(assistantMessageId, (prev) => ({
           content: prev.content || `Agent 暂时无法回答：${errorMessage}`,
+          reasoning: prev.reasoning,
           thoughtChain: [
             ...thoughtsCollector.list,
             {

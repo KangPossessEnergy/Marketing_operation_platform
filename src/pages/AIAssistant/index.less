@@ -853,9 +853,237 @@
   }
 }
 
+.ai-thought-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+  margin-bottom: 8px;
+}
+
+.ai-thought-title {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  color: #334155;
+  font-size: 12px;
+}
+
+.ai-thought-title__indicator {
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  background: #2e85f6;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(46, 133, 246, 0.12);
+}
+
+.ai-thought-count {
+  margin-left: 8px;
+  font-size: 11px;
+}
+
+.ai-thought-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  color: #5d8cd2;
+  font-size: 11px;
+  line-height: 1.4;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+
+  &:hover {
+    color: #1677ff;
+    background: #dcecff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(22, 119, 255, 0.35);
+    outline-offset: 1px;
+  }
+}
+
+.ai-thought-wrapper--collapsed {
+  margin-bottom: 12px;
+}
+
+/* 深度思考（模型推理过程）独立展示区，与正文回复分开 */
+.ai-reasoning-wrapper {
+  position: relative;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: #fbfbfe;
+  border: 1px solid #e2ddf8;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(109, 126, 231, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ai-reasoning-wrapper--streaming {
+  background: linear-gradient(135deg, #faf9fe 0%, #f4f2fd 100%);
+  border-color: #b7abf6;
+  box-shadow: 0 0 0 3px rgba(109, 126, 231, 0.12), 0 4px 16px rgba(109, 126, 231, 0.08);
+}
+
+.ai-reasoning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 24px;
+}
+
+.ai-reasoning-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  color: #38315a;
+  font-size: 12px;
+}
+
+.ai-reasoning-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6d7ee7;
+  box-shadow: 0 0 8px rgba(109, 126, 231, 0.6);
+  animation: assistant-pulse 1.8s ease-in-out infinite;
+}
+
+.ai-reasoning-title__icon {
+  color: #6d7ee7;
+  font-size: 13px;
+}
+
+.ai-reasoning-title__label {
+  color: #38315a;
+  letter-spacing: 0.2px;
+}
+
+.ai-reasoning-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 12px;
+}
+
+.ai-reasoning-badge--active {
+  color: #5c62d6;
+  background: #eae7ff;
+  border: 1px solid #d5ceff;
+}
+
+.ai-reasoning-badge__spinner {
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid #6d7ee7;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: assistant-orbit-spin 1s linear infinite;
+}
+
+.ai-reasoning-badge--completed {
+  color: #7b809a;
+  background: #f0edf9;
+}
+
+.ai-reasoning-toggle {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  color: #7a73cb;
+  font-size: 11px;
+  line-height: 1.4;
+  background: rgba(109, 126, 231, 0.05);
+  border: 1px solid rgba(109, 126, 231, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #5c62d6;
+    background: #ece9ff;
+    border-color: #beb5f8;
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(109, 126, 231, 0.35);
+    outline-offset: 1px;
+  }
+}
+
+.ai-reasoning-text {
+  max-height: 280px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  overflow-y: auto;
+  color: #545b73;
+  font-size: 12px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(217, 210, 247, 0.6);
+  border-left: 3px solid #857be6;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #d9d2f7;
+    border-radius: 4px;
+  }
+}
+
+.ai-reasoning-wrapper--collapsed {
+  margin-bottom: 12px;
+}
+
 .ai-bubble-text {
   word-break: break-word;
   white-space: pre-wrap;
+  line-height: 1.7;
+}
+
+/* 流式输出发光动态光标 */
+.ai-streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.15em;
+  margin-left: 3px;
+  vertical-align: -0.15em;
+  background: #2e85f6;
+  border-radius: 1px;
+  box-shadow: 0 0 8px rgba(46, 133, 246, 0.65);
+  animation: ai-cursor-blink 0.85s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes ai-cursor-blink {
+  0%, 100% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.15;
+    transform: scaleY(0.85);
+  }
 }
 
 /* ================== 底部悬浮输入框 ================== */

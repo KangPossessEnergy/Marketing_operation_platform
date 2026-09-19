@@ -4,6 +4,7 @@ const AGENT_HEALTH_URL = "/agent-api/health";
 export type AgentStreamEvent = {
   type:
     | "step"
+    | "reasoning"
     | "text"
     | "tool-call"
     | "tool-result"
@@ -71,6 +72,10 @@ const normalizeAgentChunk = (
       }
       return { type: "step", step: data.step };
     }
+    case "reasoning-delta":
+      return typeof chunk.delta === "string"
+        ? { type: "reasoning", delta: chunk.delta }
+        : null;
     case "text-delta":
       return typeof chunk.delta === "string"
         ? { type: "text", delta: chunk.delta }
