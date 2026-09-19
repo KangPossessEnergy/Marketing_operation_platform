@@ -428,12 +428,45 @@ export const useAgentChat = () => {
     [activeConversationKey, loadConversationMessages],
   );
 
-  // 6. 发送消息（自动落库 user + assistant 消息，并智能提炼标题）
+  // 6. 发送消息（当无会话时自动创建会话落库，支持点击推荐场景卡片快速发起）
   const sendMessage = useCallback(
     async (content?: string) => {
       const textToSend = (content ?? draft).trim();
       if (!textToSend || isThinking) {
         return;
+      }
+
+      let currentSessionId = activeConversationKey;
+
+      // 如果当前左侧没有任何会话（或尚未选中会话），则自动新建一个真实会话
+      if (!currentSessionId) {
+        const smartTitle =
+          textToSend.slice(0, 18) + (textToSend.length > 18 ? "..." : "");
+        try {
+          const newConv = await createConversation(smartTitle);
+          currentSessionId = newConv.id;
+          const createdItem: ConversationItem = {
+            key: newConv.id,
+            label: newConv.title || smartTitle,
+            time: "刚刚",
+            timestamp: Date.now(),
+            group: "历史会话",
+          };
+          setConversations((prev) => [createdItem, ...prev]);
+          setActiveConversationKey(newConv.id);
+        } catch (e) {
+          console.error("自动新建会话失败，降级本地会话:", e);
+          currentSessionId = `conv-${Date.now()}`;
+          const fallbackItem: ConversationItem = {
+            key: currentSessionId,
+            label: smartTitle,
+            time: "刚刚",
+            timestamp: Date.now(),
+            group: "历史会话",
+          };
+          setConversations((prev) => [fallbackItem, ...prev]);
+          setActiveConversationKey(currentSessionId);
+        }
       }
 
       const nowTimeStr = "刚刚";
@@ -467,13 +500,13 @@ export const useAgentChat = () => {
       setActiveThoughts([]);
 
       // 异步保存用户消息到 Nest 数据库
-      addConversationMessage(activeConversationKey, "user", textToSend).catch(
+      addConversationMessage(currentSessionId, "user", textToSend).catch(
         () => {},
       );
 
       // 如果当前会话标题是默认名，自动截取首句并更新标题 (PATCH /conversations/:id)
       const currentConv = conversations.find(
-        (c) => c.key === activeConversationKey,
+        (c) => c.key === currentSessionId,
       );
       if (
         currentConv &&
@@ -483,12 +516,12 @@ export const useAgentChat = () => {
       ) {
         const smartTitle =
           textToSend.slice(0, 18) + (textToSend.length > 18 ? "..." : "");
-        apiUpdateConversationTitle(activeConversationKey, smartTitle).catch(
+        apiUpdateConversationTitle(currentSessionId, smartTitle).catch(
           () => {},
         );
         setConversations((prev) =>
           prev.map((c) =>
-            c.key === activeConversationKey
+            c.key === currentSessionId
               ? { ...c, label: smartTitle, time: "刚刚", timestamp: Date.now() }
               : c,
           ),
@@ -501,7 +534,7 @@ export const useAgentChat = () => {
       try {
         await streamAgentChat(
           {
-            sessionId: activeConversationKey,
+            sessionId: currentSessionId,
             message: textToSend,
           },
           {
@@ -533,7 +566,7 @@ export const useAgentChat = () => {
 
         // 异步保存 Assistant 消息到 Nest 数据库，包含 reasoningContent
         addConversationMessage(
-          activeConversationKey,
+          currentSessionId,
           "assistant",
           finalContent,
           receivedReasoning || undefined,
