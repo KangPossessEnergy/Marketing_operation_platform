@@ -132,6 +132,7 @@ export const useAgentChat = () => {
             id: m.id,
             role: m.role as "user" | "assistant",
             content: m.content,
+            reasoning: m.reasoningContent || undefined,
             time: formatRelativeTime(m.createdAt),
           }));
           setMessages(mappedMsgs);
@@ -481,6 +482,7 @@ export const useAgentChat = () => {
       }
 
       let receivedText = "";
+      let receivedReasoning = "";
 
       try {
         await streamAgentChat(
@@ -493,6 +495,8 @@ export const useAgentChat = () => {
             onEvent: (event) => {
               if (event.type === "text") {
                 receivedText += event.delta || "";
+              } else if (event.type === "reasoning") {
+                receivedReasoning += event.delta || "";
               }
               handleAgentEvent(
                 assistantMessageId,
@@ -509,15 +513,16 @@ export const useAgentChat = () => {
 
         updateAssistantMessage(assistantMessageId, (prev) => ({
           content: prev.content || finalContent,
-          reasoning: prev.reasoning,
+          reasoning: prev.reasoning || receivedReasoning,
           thoughtChain: thoughtsCollector.list,
         }));
 
-        // 异步保存 Assistant 消息到 Nest 数据库
+        // 异步保存 Assistant 消息到 Nest 数据库，包含 reasoningContent
         addConversationMessage(
           activeConversationKey,
           "assistant",
           finalContent,
+          receivedReasoning || undefined,
         ).catch(() => {});
 
         setAgentStatus("online");

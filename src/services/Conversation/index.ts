@@ -15,6 +15,7 @@ export interface ApiMessageItem {
   conversationId: string;
   role: "user" | "assistant" | "system";
   content: string;
+  reasoningContent?: string | null;
   createdAt: string;
 }
 
@@ -88,11 +89,12 @@ export async function addConversationMessage(
   conversationId: string,
   role: "user" | "assistant" | "system",
   content: string,
+  reasoningContent?: string,
 ): Promise<ApiMessageItem> {
   return request(`${BASE_URL}/${conversationId}/messages`, {
     method: "POST",
     headers: getAuthHeaders(),
-    data: { role, content },
+    data: { role, content, reasoningContent },
   });
 }
 
