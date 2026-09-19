@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  BulbOutlined,
   DownOutlined,
-  RobotOutlined,
+  ThunderboltOutlined,
   UpOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -26,50 +25,77 @@ const ReasoningSection: React.FC<ReasoningSectionProps> = ({
   streaming,
   expanded,
   onToggle,
-}) => (
-  <div
-    className={`ai-reasoning-wrapper ${
-      expanded
-        ? "ai-reasoning-wrapper--expanded"
-        : "ai-reasoning-wrapper--collapsed"
-    } ${streaming ? "ai-reasoning-wrapper--streaming" : ""}`}
-  >
-    <div className="ai-reasoning-header">
-      <div className="ai-reasoning-title">
-        <span className="ai-reasoning-pulse-dot" aria-hidden="true" />
-        <BulbOutlined className="ai-reasoning-title__icon" aria-hidden="true" />
-        <Text strong className="ai-reasoning-title__label">深度推理</Text>
-        {streaming ? (
-          <span className="ai-reasoning-badge ai-reasoning-badge--active">
-            <span className="ai-reasoning-badge__spinner" />
-            思考演算中
-          </span>
-        ) : (
-          <span className="ai-reasoning-badge ai-reasoning-badge--completed">
-            已完成推理
-          </span>
-        )}
-      </div>
-      <button
-        className="ai-reasoning-toggle"
-        type="button"
-        aria-expanded={expanded}
-        aria-controls={`reasoning-${messageId}`}
-        onClick={() => onToggle(messageId)}
-      >
-        {expanded ? <UpOutlined /> : <DownOutlined />}
-        <span>{expanded ? "收起思考" : "展开思考"}</span>
-      </button>
-    </div>
+}) => {
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-    <div id={`reasoning-${messageId}`} hidden={!expanded}>
-      <div className="ai-reasoning-text">
-        {reasoning}
-        {streaming && <span className="ai-streaming-cursor" aria-hidden="true" />}
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (streaming) {
+      const startTime = Date.now();
+      timer = setInterval(() => {
+        setElapsedSeconds(Math.round(((Date.now() - startTime) / 1000) * 10) / 10);
+      }, 100);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [streaming]);
+
+  return (
+    <div
+      className={`ai-reasoning-wrapper ${
+        expanded
+          ? "ai-reasoning-wrapper--expanded"
+          : "ai-reasoning-wrapper--collapsed"
+      } ${streaming ? "ai-reasoning-wrapper--streaming" : ""}`}
+    >
+      <div className="ai-reasoning-header">
+        <div className="ai-reasoning-title">
+          {/* 量子跳动神经元波形 */}
+          <div className="ai-neuron-wave" aria-hidden="true">
+            <span className="ai-neuron-bar" />
+            <span className="ai-neuron-bar" />
+            <span className="ai-neuron-bar" />
+            <span className="ai-neuron-bar" />
+          </div>
+
+          <Text strong className="ai-reasoning-title__label">
+            NEURAL REASONING
+          </Text>
+
+          {streaming ? (
+            <span className="ai-reasoning-badge ai-reasoning-badge--active">
+              <span className="ai-reasoning-badge__spinner" />
+              神经流式演算中 {elapsedSeconds > 0 ? `· ${elapsedSeconds.toFixed(1)}s` : ""}
+            </span>
+          ) : (
+            <span className="ai-reasoning-badge ai-reasoning-badge--completed">
+              ✓ 推理收敛
+            </span>
+          )}
+        </div>
+
+        <button
+          className="ai-reasoning-toggle"
+          type="button"
+          aria-expanded={expanded}
+          aria-controls={`reasoning-${messageId}`}
+          onClick={() => onToggle(messageId)}
+        >
+          {expanded ? <UpOutlined /> : <DownOutlined />}
+          <span>{expanded ? "收起思考舱" : "展开思考舱"}</span>
+        </button>
+      </div>
+
+      <div id={`reasoning-${messageId}`} hidden={!expanded}>
+        <div className="ai-reasoning-text">
+          {reasoning}
+          {streaming && <span className="ai-streaming-cursor" aria-hidden="true" />}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const MessageList: React.FC<MessageListProps> = ({
   messages,
@@ -81,7 +107,6 @@ const MessageList: React.FC<MessageListProps> = ({
     Record<string, boolean>
   >({});
 
-  // 推理块默认在「正在思考且正文未开始」时展开，正文输出后自动折叠，用户可手动切换
   const renderReasoning = (message: ChatMessage) => {
     const streaming = Boolean(message.isStreaming && !message.content);
     const expanded = expandedReasoning[message.id] ?? streaming;
@@ -130,23 +155,25 @@ const MessageList: React.FC<MessageListProps> = ({
               placement={isUser ? "end" : "start"}
               avatar={
                 isUser ? (
-                  <Avatar
-                    style={{ backgroundColor: "#10b981" }}
-                    icon={<UserOutlined />}
-                  />
+                  <div className="ai-avatar-user">
+                    <UserOutlined />
+                  </div>
                 ) : (
-                  <Avatar
-                    style={{ backgroundColor: "#2563eb" }}
-                    icon={<RobotOutlined />}
-                  />
+                  <div className="ai-avatar-holo">
+                    <ThunderboltOutlined />
+                    <span className="ai-avatar-halo" />
+                  </div>
                 )
               }
               header={
-                <Space size={8}>
-                  <Text strong>{isUser ? "我" : "AI 助手"}</Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {message.time}
-                  </Text>
+                <Space size={8} className="ai-bubble-header">
+                  <span className="ai-sender-name">
+                    {isUser ? "USER PILOT" : "NEURAL CORE AI"}
+                  </span>
+                  <span className="ai-msg-time">{message.time}</span>
+                  {!isUser && message.isStreaming && (
+                    <span className="ai-streaming-tag">STREAMING</span>
+                  )}
                 </Space>
               }
               content={
@@ -164,7 +191,7 @@ const MessageList: React.FC<MessageListProps> = ({
               }
               typing={
                 message.isStreaming
-                  ? { effect: "typing", step: 2, interval: 30 }
+                  ? { effect: "typing", step: 3, interval: 20 }
                   : undefined
               }
             />
@@ -172,36 +199,35 @@ const MessageList: React.FC<MessageListProps> = ({
         );
       })}
 
-      {/* 当助手正在初始思考且尚未有文本/推理流时 */}
-      {isThinking &&
-        !hasStreamingText &&
-        !hasStreamingReasoning && (
-          <div className="ai-bubble-item ai-bubble-item--ai">
-            <Bubble
-              placement="start"
-              avatar={
-                <Avatar
-                  style={{ backgroundColor: "#2563eb" }}
-                  icon={<RobotOutlined />}
-                />
-              }
-              header={
-                <Space size={8}>
-                  <Text strong>AI 助手</Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    思考中...
-                  </Text>
-                </Space>
-              }
-              loading
-              content={
-                <Text type="secondary">
-                  {thinkingStatus || "正在规划执行路径并检索相关数据..."}
-                </Text>
-              }
-            />
-          </div>
-        )}
+      {/* 初始规划状态指示卡 */}
+      {isThinking && !hasStreamingText && !hasStreamingReasoning && (
+        <div className="ai-bubble-item ai-bubble-item--ai">
+          <Bubble
+            placement="start"
+            avatar={
+              <div className="ai-avatar-holo">
+                <ThunderboltOutlined />
+                <span className="ai-avatar-halo" />
+              </div>
+            }
+            header={
+              <Space size={8} className="ai-bubble-header">
+                <span className="ai-sender-name">NEURAL CORE AI</span>
+                <span className="ai-streaming-tag">INITIALIZING</span>
+              </Space>
+            }
+            loading
+            content={
+              <div className="ai-initializing-pod">
+                <div className="ai-initializing-laser" />
+                <span className="ai-initializing-text">
+                  {thinkingStatus || "量子规划路径锁定中，正在实时检索 CPQ 物料与 CRM 数据链..."}
+                </span>
+              </div>
+            }
+          />
+        </div>
+      )}
     </div>
   );
 };

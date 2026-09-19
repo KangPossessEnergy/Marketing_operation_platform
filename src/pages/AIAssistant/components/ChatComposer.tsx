@@ -1,8 +1,10 @@
 import React from "react";
 import {
   AudioOutlined,
+  CloseCircleOutlined,
   PaperClipOutlined,
   SendOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
 import { Sender } from "@ant-design/x";
 import { Button, Space, Tooltip } from "antd";
@@ -17,7 +19,17 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
 }) => {
   return (
     <div className="assistant-composer-container">
-      <div className="assistant-composer-box">
+      {/* 悬浮战术底座顶部的能量刻度线 */}
+      <div className="assistant-composer-deck-indicator">
+        <span className="deck-marker deck-marker--left" />
+        <span className="deck-center-label">
+          <ThunderboltOutlined style={{ marginRight: 4, color: "#00f2fe" }} />
+          TACTICAL CPQ COMMAND DECK
+        </span>
+        <span className="deck-marker deck-marker--right" />
+      </div>
+
+      <div className={`assistant-composer-box ${isThinking ? "assistant-composer-box--active" : ""}`}>
         <Sender
           value={draft}
           onChange={onDraftChange}
@@ -28,9 +40,9 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
           }}
           onCancel={onCancel}
           loading={isThinking}
-          placeholder="输入客户需求、售前咨询问题或输入报价配置诉求..."
+          placeholder="输入客户采购需求、物料清单选型或售前方案诉求..."
           prefix={
-            <Tooltip title="上传客户招标文件/户型图/物料清单">
+            <Tooltip title="解析客户招标文件 / CAD户型图 / BOM物料清单">
               <Button
                 type="text"
                 icon={<PaperClipOutlined />}
@@ -40,15 +52,25 @@ const ChatComposer: React.FC<ChatComposerProps> = ({
               />
             </Tooltip>
           }
-          actions={(_, { SendButton, LoadingButton }) => {
+          actions={(_, { SendButton }) => {
             if (isThinking) {
-              return <LoadingButton />;
+              return (
+                <button
+                  type="button"
+                  className="assistant-abort-btn"
+                  onClick={onCancel}
+                  title="强行中止当前神经推理与流式生成"
+                >
+                  <CloseCircleOutlined />
+                  <span>中止生成</span>
+                </button>
+              );
             }
             return (
-              <Space size={10} align="center">
+              <Space size={12} align="center">
                 <span className="assistant-voice-hint">
-                  <AudioOutlined style={{ marginRight: 4 }} />
-                  Enter 发送 · Shift + Enter 换行 · 支持方案拆解与毛利测算
+                  <AudioOutlined style={{ marginRight: 4, color: "#00f2fe" }} />
+                  按 Enter 发送指令 · Shift+Enter 换行
                 </span>
                 <SendButton
                   type="primary"
