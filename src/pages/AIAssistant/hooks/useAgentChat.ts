@@ -66,7 +66,7 @@ export const useAgentChat = () => {
   const [conversations, setConversations] = useState<ConversationItem[]>(() => {
     return loadFromStorage<ConversationItem[]>(
       STORAGE_KEY_CONVS,
-      initialConversationList,
+      [],
     );
   });
 
@@ -74,7 +74,7 @@ export const useAgentChat = () => {
     () => {
       return loadFromStorage<string>(
         STORAGE_KEY_ACTIVE_KEY,
-        conversations[0]?.key || "conv-1",
+        conversations[0]?.key || "",
       );
     },
   );
@@ -94,7 +94,21 @@ export const useAgentChat = () => {
   const fetchConversations = useCallback(async () => {
     try {
       const remoteList = await getConversationList();
-      if (Array.isArray(remoteList) && remoteList.length > 0) {
+      if (Array.isArray(remoteList)) {
+        if (remoteList.length === 0) {
+          // 数据库中已经清空全部会话
+          setConversations([]);
+          setActiveConversationKey("");
+          setMessages([initialWelcomeMessage]);
+          try {
+            localStorage.removeItem(STORAGE_KEY_CONVS);
+            localStorage.removeItem(STORAGE_KEY_ACTIVE_KEY);
+          } catch (e) {
+            console.error(e);
+          }
+          return "";
+        }
+
         const mappedList: ConversationItem[] = remoteList.map(
           (item: ApiConversationItem) => ({
             key: item.id,
